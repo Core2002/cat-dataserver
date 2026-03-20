@@ -4,17 +4,13 @@ import (
 	"fmt"
 	"net/http"
 
+	"fifu.fun/cat-dataserver/model"
 	"github.com/gin-gonic/gin"
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 )
 
-// User 模型
-type User struct {
-	ID   uint   `json:"id" gorm:"primaryKey"`
-	Name string `json:"name" gorm:"size:100;not null"`
-	Age  int    `json:"age" gorm:"not null"`
-}
+// Cat 模型
 
 var db *gorm.DB
 
@@ -26,12 +22,12 @@ func initDB() error {
 		return err
 	}
 	// 自动迁移
-	return db.AutoMigrate(&User{})
+	return db.AutoMigrate(&model.Cat{}, &model.CatEvent{}, &model.CatAction{})
 }
 
 // 获取所有用户
 func getUsers(c *gin.Context) {
-	var users []User
+	var users []model.Cat
 	if err := db.Find(&users).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -42,7 +38,7 @@ func getUsers(c *gin.Context) {
 // 获取单个用户
 func getUser(c *gin.Context) {
 	id := c.Param("id")
-	var user User
+	var user model.Cat
 	if err := db.First(&user, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
@@ -52,7 +48,7 @@ func getUser(c *gin.Context) {
 
 // 创建用户
 func createUser(c *gin.Context) {
-	var user User
+	var user model.Cat
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -67,12 +63,12 @@ func createUser(c *gin.Context) {
 // 更新用户
 func updateUser(c *gin.Context) {
 	id := c.Param("id")
-	var user User
+	var user model.Cat
 	if err := db.First(&user, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
-	var updates User
+	var updates model.Cat
 	if err := c.ShouldBindJSON(&updates); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -87,7 +83,7 @@ func updateUser(c *gin.Context) {
 // 删除用户
 func deleteUser(c *gin.Context) {
 	id := c.Param("id")
-	if err := db.Delete(&User{}, id).Error; err != nil {
+	if err := db.Delete(&model.Cat{}, id).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
