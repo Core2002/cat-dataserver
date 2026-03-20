@@ -3,12 +3,12 @@ package model
 type CatEventType string
 
 const (
-	CatEventTypeSick               = "生病"
-	CatEventTypeInjure             = "受伤"
-	CatEventTypePreg               = "怀孕"
-	CatEventTypeBirth              = "分娩"
-	CatEventTypeDeath              = "死亡"
-	CatEventTypeContractTerminatio = "合同解除"
+	CatSick               = "生病"
+	CatInjure             = "受伤"
+	CatPreg               = "怀孕"
+	CatBirth              = "分娩"
+	CatDeath              = "死亡"
+	CatContractTerminatio = "合同解除"
 )
 
 type CatEvent struct {
@@ -22,18 +22,18 @@ type CatEvent struct {
 type CatActionType string
 
 const (
-	CatActionTypeFeed            = "喂食"
-	CatActionTypeGiveWater       = "喂水"
-	CatActionTypeTakeTemperature = "测体温"
-	CatActionTypePlay            = "逗猫"
-	CatActionTypeSterilize       = "绝育"
-	CatActionTypeHealthCheck     = "体检"
-	CatActionTypeDeworm          = "驱虫"
-	CatActionTypeCleanLitter     = "清理猫砂"
-	CatActionTypeDisinfect       = "环境消毒"
-	CatActionTypeTrimNails       = "修剪指甲"
-	CatActionTypeWashFeet        = "洗脚"
-	CatActionTypeVaccinate       = "疫苗"
+	CatActionFeed            = "喂食"
+	CatActionGiveWater       = "喂水"
+	CatActionTakeTemperature = "测体温"
+	CatActionPlay            = "逗猫"
+	CatActionSterilize       = "绝育"
+	CatActionHealthCheck     = "体检"
+	CatActionDeworm          = "驱虫"
+	CatActionCleanLitter     = "清理猫砂"
+	CatActionDisinfect       = "环境消毒"
+	CatActionTrimNails       = "修剪指甲"
+	CatActionWashFeet        = "洗脚"
+	CatActionVaccinate       = "疫苗"
 )
 
 type CatAction struct {
