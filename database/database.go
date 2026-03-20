@@ -16,5 +16,5 @@ func InitDB(dsn string) error {
 		return err
 	}
 	// 自动迁移
-	return DB.AutoMigrate(&model.Cat{}, &model.CatEvent{}, &model.CatAction{}, &model.CatFSM{})
+	return DB.AutoMigrate(&model.Cat{}, &model.CatEvent{}, &model.CatAction{}, &model.CatFSM{}, &model.Site{})
 }
