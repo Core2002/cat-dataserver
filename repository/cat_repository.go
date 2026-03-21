@@ -57,6 +57,6 @@ func (r *CatRepository) Update(cat *model.Cat, updates *model.Cat) error {
 }
 
 // Delete 删除 Cat
-func (r *CatRepository) Delete(id uint) error {
-	return database.DB.Delete(&model.Cat{}, id).Error
+func (r *CatRepository) Delete(catID uint) error {
+	return database.DB.Delete(&model.Cat{}, catID).Error
 }
