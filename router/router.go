@@ -15,6 +15,18 @@ func SetupRouter() *gin.Engine {
 	catRepo := repository.NewCatRepository()
 	catController := controller.NewCatController(catRepo)
 
+	catEventRepo := repository.NewCatEventRepository()
+	catEventController := controller.NewCatEventController(catEventRepo)
+
+	catActionRepo := repository.NewCatActionRepository()
+	catActionController := controller.NewCatActionController(catActionRepo)
+
+	catFSMRepo := repository.NewCatFSMRepository()
+	catFSMController := controller.NewCatFSMController(catFSMRepo)
+
+	siteRepo := repository.NewSiteRepository()
+	siteController := controller.NewSiteController(siteRepo)
+
 	// Cat CRUD 路由
 	r.GET("/cats", catController.GetCats)
 	r.GET("/cats/page", catController.GetCatsPage)
@@ -22,6 +34,51 @@ func SetupRouter() *gin.Engine {
 	r.POST("/cats", catController.CreateCat)
 	r.PUT("/cats/:id", catController.UpdateCat)
 	r.DELETE("/cats/:id", catController.DeleteCat)
+
+	// CatEvent CRUD 路由
+	r.GET("/cat-events", catEventController.GetCatEvents)
+	r.GET("/cat-events/page", catEventController.GetCatEventsPage)
+	r.GET("/cat-events/:id", catEventController.GetCatEvent)
+	r.GET("/cat-events/cat/:cat_id", catEventController.GetCatEventsByCatID)
+	r.GET("/cat-events/site/:site_id", catEventController.GetCatEventsBySiteID)
+	r.POST("/cat-events", catEventController.CreateCatEvent)
+	r.PUT("/cat-events/:id", catEventController.UpdateCatEvent)
+	r.DELETE("/cat-events/:id", catEventController.DeleteCatEvent)
+
+	// CatAction CRUD 路由
+	r.GET("/cat-actions", catActionController.GetCatActions)
+	r.GET("/cat-actions/page", catActionController.GetCatActionsPage)
+	r.GET("/cat-actions/:id", catActionController.GetCatAction)
+	r.GET("/cat-actions/cat/:cat_id", catActionController.GetCatActionsByCatID)
+	r.GET("/cat-actions/site/:site_id", catActionController.GetCatActionsBySiteID)
+	r.GET("/cat-actions/user/:user_id", catActionController.GetCatActionsByUserID)
+	r.POST("/cat-actions", catActionController.CreateCatAction)
+	r.PUT("/cat-actions/:id", catActionController.UpdateCatAction)
+	r.DELETE("/cat-actions/:id", catActionController.DeleteCatAction)
+
+	// CatFSM CRUD 路由
+	r.GET("/cat-fsms", catFSMController.GetCatFSMs)
+	r.GET("/cat-fsms/page", catFSMController.GetCatFSMsPage)
+	r.GET("/cat-fsms/:id", catFSMController.GetCatFSM)
+	r.GET("/cat-fsms/site/:site_id", catFSMController.GetCatFSMsBySiteID)
+	r.POST("/cat-fsms", catFSMController.CreateCatFSM)
+	r.PUT("/cat-fsms/:id", catFSMController.UpdateCatFSM)
+	r.DELETE("/cat-fsms/:id", catFSMController.DeleteCatFSM)
+	r.PATCH("/cat-fsms/:cat_id/temperature", catFSMController.UpdateTemperature)
+	r.PATCH("/cat-fsms/:cat_id/weight", catFSMController.UpdateWeight)
+	r.PATCH("/cat-fsms/:cat_id/trim-nails-time", catFSMController.UpdateTrimNailsTime)
+
+	// Site CRUD 路由
+	r.GET("/sites", siteController.GetSites)
+	r.GET("/sites/page", siteController.GetSitesPage)
+	r.GET("/sites/:id", siteController.GetSite)
+	r.POST("/sites", siteController.CreateSite)
+	r.PUT("/sites/:id", siteController.UpdateSite)
+	r.DELETE("/sites/:id", siteController.DeleteSite)
+	r.PATCH("/sites/:site_id/disinfect-time", siteController.UpdateDisinfectTime)
+	r.PATCH("/sites/:site_id/feed-time", siteController.UpdateFeedTime)
+	r.PATCH("/sites/:site_id/give-water-time", siteController.UpdateGiveWaterTime)
+	r.PATCH("/sites/:site_id/play-time", siteController.UpdatePlayTime)
 
 	// 健康检查
 	r.GET("/health", controller.HealthCheck)
