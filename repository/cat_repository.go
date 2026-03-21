@@ -21,7 +21,7 @@ func (r *CatRepository) FindAll() ([]model.Cat, error) {
 }
 
 // FindByID 根据 ID 查找 Cat
-func (r *CatRepository) FindByID(id string) (*model.Cat, error) {
+func (r *CatRepository) FindByID(id uint) (*model.Cat, error) {
 	var cat model.Cat
 	err := database.DB.First(&cat, id).Error
 	if err != nil {
@@ -41,6 +41,6 @@ func (r *CatRepository) Update(cat *model.Cat, updates *model.Cat) error {
 }
 
 // Delete 删除 Cat
-func (r *CatRepository) Delete(id string) error {
+func (r *CatRepository) Delete(id uint) error {
 	return database.DB.Delete(&model.Cat{}, id).Error
 }
