@@ -4,5 +4,5 @@ const (
 	// ServerPort 服务器端口
 	ServerPort = ":5100"
 	// DatabaseDSN 数据库连接字符串
-	DatabaseDSN = "test.db"
+	DatabaseDSN = "cat-dataserver.db"
 )
