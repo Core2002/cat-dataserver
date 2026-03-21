@@ -14,11 +14,11 @@ const (
 )
 
 type CatEvent struct {
-	ID        uint         `json:"id" gorm:"primaryKey"`
-	CatID     uint         `json:"cat_id" gorm:"not null"`
-	Type      CatEventType `json:"event_type" gorm:"size:100;not null"` // 事件项目
-	Detail    string       `json:"detail" gorm:"size:1000;not null"`    // 事件详情
+	EventID   uint         `json:"event_id" gorm:"primaryKey"`
+	EventType CatEventType `json:"event_type" gorm:"size:100;not null"` // 事件项目
 	EventTime time.Time    `json:"event_time" gorm:"not null"`          // 发生时间
+	CatID     uint         `json:"cat_id" gorm:"not null"`              // 发生事件的猫
+	Detail    string       `json:"detail" gorm:"size:1000;not null"`    // 事件详情
 }
 
 type CatActionType string
@@ -39,10 +39,10 @@ const (
 )
 
 type CatAction struct {
-	ID     uint          `json:"id" gorm:"primaryKey"`
-	CatID  uint          `json:"cat_id" gorm:"not null"`
-	UserID uint          `json:"user_id" gorm:"not null"`          // 执行人
-	Time   time.Time     `json:"time" gorm:"not null"`             // 执行时间
-	Type   CatActionType `json:"type" gorm:"size:100;not null"`    // 执行项目
-	Detail string        `json:"detail" gorm:"size:1000;not null"` // 事件详情
+	ActionID     uint          `json:"action_id" gorm:"primaryKey"`
+	CatID        uint          `json:"cat_id" gorm:"not null"`                  // 被执行的猫
+	UserID       uint          `json:"user_id" gorm:"not null"`                 // 执行人
+	ActionTime   time.Time     `json:"action_time" gorm:"not null"`             // 执行时间
+	ActionType   CatActionType `json:"action_type" gorm:"size:100;not null"`    // 执行项目
+	ActionDetail string        `json:"action_detail" gorm:"size:1000;not null"` // 事件详情
 }
