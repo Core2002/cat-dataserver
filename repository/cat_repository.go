@@ -20,6 +20,22 @@ func (r *CatRepository) FindAll() ([]model.Cat, error) {
 	return cats, err
 }
 
+// FindPage 分页查询 Cat
+func (r *CatRepository) FindPage(page, pageSize int) ([]model.Cat, int64, error) {
+	var cats []model.Cat
+	var total int64
+
+	// 查询总数
+	if err := database.DB.Model(&model.Cat{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// 分页查询
+	offset := (page - 1) * pageSize
+	err := database.DB.Offset(offset).Limit(pageSize).Find(&cats).Error
+	return cats, total, err
+}
+
 // FindByID 根据 ID 查找 Cat
 func (r *CatRepository) FindByID(id uint) (*model.Cat, error) {
 	var cat model.Cat

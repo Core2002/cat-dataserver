@@ -4,6 +4,7 @@ import (
 	"fifu.fun/cat-dataserver/model"
 	"fifu.fun/cat-dataserver/repository"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,10 +29,36 @@ func (ctrl *CatController) GetCats(c *gin.Context) {
 	c.JSON(http.StatusOK, cats)
 }
 
+// GetCatsPage 分页获取 Cat
+func (ctrl *CatController) GetCatsPage(c *gin.Context) {
+	var req model.PaginationRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	page := req.GetPage()
+	pageSize := req.GetPageSize()
+
+	cats, total, err := ctrl.repo.FindPage(page, pageSize)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	response := model.NewPaginationResponse(cats, total, page, pageSize)
+	c.JSON(http.StatusOK, response)
+}
+
 // GetCat 获取单个 Cat
 func (ctrl *CatController) GetCat(c *gin.Context) {
-	id := c.Param("id")
-	cat, err := ctrl.repo.FindByID(id)
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+	cat, err := ctrl.repo.FindByID(uint(id))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Cat not found"})
 		return
@@ -55,8 +82,13 @@ func (ctrl *CatController) CreateCat(c *gin.Context) {
 
 // UpdateCat 更新 Cat
 func (ctrl *CatController) UpdateCat(c *gin.Context) {
-	id := c.Param("id")
-	cat, err := ctrl.repo.FindByID(id)
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+	cat, err := ctrl.repo.FindByID(uint(id))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Cat not found"})
 		return
@@ -75,8 +107,13 @@ func (ctrl *CatController) UpdateCat(c *gin.Context) {
 
 // DeleteCat 删除 Cat
 func (ctrl *CatController) DeleteCat(c *gin.Context) {
-	id := c.Param("id")
-	if err := ctrl.repo.Delete(id); err != nil {
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+	if err := ctrl.repo.Delete(uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

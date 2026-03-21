@@ -17,6 +17,7 @@ func SetupRouter() *gin.Engine {
 
 	// Cat CRUD 路由
 	r.GET("/cats", catController.GetCats)
+	r.GET("/cats/page", catController.GetCatsPage)
 	r.GET("/cats/:id", catController.GetCat)
 	r.POST("/cats", catController.CreateCat)
 	r.PUT("/cats/:id", catController.UpdateCat)
