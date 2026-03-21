@@ -37,9 +37,9 @@ func (r *CatRepository) FindPage(page, pageSize int) ([]model.Cat, int64, error)
 }
 
 // FindByID 根据 ID 查找 Cat
-func (r *CatRepository) FindByID(id uint) (*model.Cat, error) {
+func (r *CatRepository) FindByID(catID uint) (*model.Cat, error) {
 	var cat model.Cat
-	err := database.DB.First(&cat, id).Error
+	err := database.DB.First(&cat, catID).Error
 	if err != nil {
 		return nil, err
 	}
