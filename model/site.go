@@ -1,8 +1,13 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Site struct {
+	gorm.Model
 	SiteID               uint      `json:"site_id" gorm:"primaryKey"`                        // 站点ID
 	SiteName             string    `json:"site_name" gorm:"size:100;not null"`               // 站点名称
 	SiteAddress          string    `json:"site_address" gorm:"size:100;not null"`            // 站点地址

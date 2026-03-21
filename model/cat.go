@@ -1,6 +1,9 @@
 package model
 
+import "gorm.io/gorm"
+
 type Cat struct {
+	gorm.Model
 	CatID             uint   `json:"cat_id" gorm:"primaryKey"`                     // 猫ID
 	CatName           string `json:"cat_name" gorm:"size:100;not null"`            // 猫名
 	CatPhotoUri       string `json:"cat_photo_uri" gorm:"size:1000;not null"`      // 猫照片

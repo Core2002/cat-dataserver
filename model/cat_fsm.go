@@ -1,8 +1,13 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type CatFSM struct {
+	gorm.Model
 	CatID         uint      `json:"cat_id" gorm:"primaryKey"`        // 猫ID
 	SiteID        uint      `json:"site_id" gorm:"not null"`         // 猫所在设施ID
 	TemperatureC  float32   `json:"temperature_c" gorm:"not null"`   // 体温
