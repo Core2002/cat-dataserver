@@ -3,6 +3,7 @@ package router
 import (
 	"fifu.fun/cat-dataserver/controller"
 	"fifu.fun/cat-dataserver/repository"
+	"github.com/gin-contrib/cors"
 
 	"github.com/gin-gonic/gin"
 )
@@ -10,6 +11,16 @@ import (
 // SetupRouter 设置路由
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
+	r.Use(cors.New(cors.Config{
+		AllowOrigins: []string{
+			"http://localhost:5173",
+			"http://127.0.0.1:5173",
+		},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 
 	// 初始化 repository 和 controller
 	catRepo := repository.NewCatRepository()
