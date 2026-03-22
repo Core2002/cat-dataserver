@@ -43,7 +43,7 @@ const (
 
 type CatAction struct {
 	gorm.Model
-	ActionID     uint          `json:"action_id" gorm:"primaryKey" binding:"min=1"`
+	ActionID     uint          `json:"action_id" gorm:"primaryKey" binding:"omitempty,min=1"`
 	CatID        uint          `json:"cat_id" gorm:"not null" binding:"required,min=1"`                           // 被执行的猫
 	SiteID       uint          `json:"site_id" gorm:"not null" binding:"required,min=1"`                          // 执行地点
 	UserID       uint          `json:"user_id" gorm:"not null" binding:"required,min=1"`                          // 执行人

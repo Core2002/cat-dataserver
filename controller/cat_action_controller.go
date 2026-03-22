@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fifu.fun/cat-dataserver/middleware"
 	"fifu.fun/cat-dataserver/model"
 	"fifu.fun/cat-dataserver/repository"
 	"net/http"
@@ -11,12 +12,16 @@ import (
 
 // CatActionController CatAction 处理器
 type CatActionController struct {
-	repo *repository.CatActionRepository
+	repo           *repository.CatActionRepository
+	actionProcessor *middleware.ActionProcessor
 }
 
 // NewCatActionController 创建 CatActionController 实例
-func NewCatActionController(repo *repository.CatActionRepository) *CatActionController {
-	return &CatActionController{repo: repo}
+func NewCatActionController(repo *repository.CatActionRepository, actionProcessor *middleware.ActionProcessor) *CatActionController {
+	return &CatActionController{
+		repo:           repo,
+		actionProcessor: actionProcessor,
+	}
 }
 
 // GetCatActions 获取所有 CatAction
@@ -121,11 +126,24 @@ func (ctrl *CatActionController) CreateCatAction(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := ctrl.repo.Create(&action); err != nil {
+
+	// 使用动作处理器处理动作，自动更新状态机
+	updatedFSM, err := ctrl.actionProcessor.ProcessAction(&action)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, action)
+
+	response := gin.H{
+		"action": action,
+	}
+
+	// 如果状态机被更新，返回更新后的状态
+	if updatedFSM != nil {
+		response["fsm"] = updatedFSM
+	}
+
+	c.JSON(http.StatusCreated, response)
 }
 
 // UpdateCatAction 更新 CatAction
