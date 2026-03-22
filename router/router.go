@@ -2,15 +2,24 @@ package router
 
 import (
 	"fifu.fun/cat-dataserver/controller"
+	"fifu.fun/cat-dataserver/middleware"
 	"fifu.fun/cat-dataserver/repository"
 	"github.com/gin-contrib/cors"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 // SetupRouter 设置路由
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
+	
+	// 注册自定义验证器
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		middleware.RegisterCustomValidators(v)
+	}
+	
 	r.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
 			"http://localhost:5173",
