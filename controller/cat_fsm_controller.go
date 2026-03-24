@@ -19,16 +19,6 @@ func NewCatFSMController(repo *repository.CatFSMRepository) *CatFSMController {
 	return &CatFSMController{repo: repo}
 }
 
-// GetCatFSMs 获取所有 CatFSM
-func (ctrl *CatFSMController) GetCatFSMs(c *gin.Context) {
-	fsms, err := ctrl.repo.FindAll()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, fsms)
-}
-
 // GetCatFSMsPage 分页获取 CatFSM
 func (ctrl *CatFSMController) GetCatFSMsPage(c *gin.Context) {
 	var req model.PaginationRequest

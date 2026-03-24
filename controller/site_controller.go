@@ -19,16 +19,6 @@ func NewSiteController(repo *repository.SiteRepository) *SiteController {
 	return &SiteController{repo: repo}
 }
 
-// GetSites 获取所有 Site
-func (ctrl *SiteController) GetSites(c *gin.Context) {
-	sites, err := ctrl.repo.FindAll()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, sites)
-}
-
 // GetSitesPage 分页获取 Site
 func (ctrl *SiteController) GetSitesPage(c *gin.Context) {
 	var req model.PaginationRequest

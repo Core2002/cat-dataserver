@@ -51,7 +51,6 @@ func SetupRouter() *gin.Engine {
 	siteController := controller.NewSiteController(siteRepo)
 
 	// Cat CRUD 路由
-	r.GET("/cats", catController.GetCats)
 	r.GET("/cats/page", catController.GetCatsPage)
 	r.GET("/cats/:id", catController.GetCat)
 	r.POST("/cats", catController.CreateCat)
@@ -59,7 +58,6 @@ func SetupRouter() *gin.Engine {
 	r.DELETE("/cats/:id", catController.DeleteCat)
 
 	// CatEvent CRUD 路由
-	r.GET("/cat-events", catEventController.GetCatEvents)
 	r.GET("/cat-events/page", catEventController.GetCatEventsPage)
 	r.GET("/cat-events/:id", catEventController.GetCatEvent)
 	r.GET("/cat-events/cat/:cat_id", catEventController.GetCatEventsByCatID)
@@ -69,7 +67,6 @@ func SetupRouter() *gin.Engine {
 	r.DELETE("/cat-events/:id", catEventController.DeleteCatEvent)
 
 	// CatAction CRUD 路由
-	r.GET("/cat-actions", catActionController.GetCatActions)
 	r.GET("/cat-actions/page", catActionController.GetCatActionsPage)
 	r.GET("/cat-actions/:id", catActionController.GetCatAction)
 	r.GET("/cat-actions/cat/:cat_id", catActionController.GetCatActionsByCatID)
@@ -80,7 +77,6 @@ func SetupRouter() *gin.Engine {
 	r.DELETE("/cat-actions/:id", catActionController.DeleteCatAction)
 
 	// CatFSM CRUD 路由
-	r.GET("/cat-fsms", catFSMController.GetCatFSMs)
 	r.GET("/cat-fsms/page", catFSMController.GetCatFSMsPage)
 	r.GET("/cat-fsms/:id", catFSMController.GetCatFSM)
 	r.GET("/cat-fsms/site/:site_id", catFSMController.GetCatFSMsBySiteID)
@@ -92,7 +88,6 @@ func SetupRouter() *gin.Engine {
 	r.PATCH("/cat-fsms/:cat_id/trim-nails-time", catFSMController.UpdateTrimNailsTime)
 
 	// Site CRUD 路由
-	r.GET("/sites", siteController.GetSites)
 	r.GET("/sites/page", siteController.GetSitesPage)
 	r.GET("/sites/:id", siteController.GetSite)
 	r.POST("/sites", siteController.CreateSite)
