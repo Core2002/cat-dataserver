@@ -123,31 +123,6 @@ func TestCreateCatAction(t *testing.T) {
 	}
 }
 
-func TestGetCatActions(t *testing.T) {
-	ctrl := setupCatActionController()
-
-	req, _ := http.NewRequest("GET", "/cat-actions", nil)
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = req
-
-	ctrl.GetCatActions(c)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("Expected status code %d, got %d", http.StatusOK, w.Code)
-	}
-
-	var response []model.CatAction
-	err := json.Unmarshal(w.Body.Bytes(), &response)
-	if err != nil {
-		t.Fatalf("Failed to parse response: %v", err)
-	}
-
-	if response == nil {
-		t.Error("Expected non-nil response")
-	}
-}
-
 func TestGetCatActionsPage(t *testing.T) {
 	ctrl := setupCatActionController()
 

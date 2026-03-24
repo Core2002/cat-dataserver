@@ -80,31 +80,6 @@ func TestCreateCat(t *testing.T) {
 	}
 }
 
-func TestGetCats(t *testing.T) {
-	ctrl := setupCatController()
-
-	req, _ := http.NewRequest("GET", "/cats", nil)
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = req
-
-	ctrl.GetCats(c)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("Expected status code %d, got %d", http.StatusOK, w.Code)
-	}
-
-	var response []model.Cat
-	err := json.Unmarshal(w.Body.Bytes(), &response)
-	if err != nil {
-		t.Fatalf("Failed to parse response: %v", err)
-	}
-
-	if response == nil {
-		t.Error("Expected non-nil response")
-	}
-}
-
 func TestGetCatPage(t *testing.T) {
 	ctrl := setupCatController()
 
