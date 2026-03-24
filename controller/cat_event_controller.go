@@ -11,12 +11,18 @@ import (
 
 // CatEventController CatEvent 处理器
 type CatEventController struct {
-	repo *repository.CatEventRepository
+	repo     *repository.CatEventRepository
+	catRepo  *repository.CatRepository
+	siteRepo *repository.SiteRepository
 }
 
 // NewCatEventController 创建 CatEventController 实例
-func NewCatEventController(repo *repository.CatEventRepository) *CatEventController {
-	return &CatEventController{repo: repo}
+func NewCatEventController(repo *repository.CatEventRepository, catRepo *repository.CatRepository, siteRepo *repository.SiteRepository) *CatEventController {
+	return &CatEventController{
+		repo:     repo,
+		catRepo:  catRepo,
+		siteRepo: siteRepo,
+	}
 }
 
 // GetCatEvents 获取所有 CatEvent
@@ -105,6 +111,25 @@ func (ctrl *CatEventController) CreateCatEvent(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	// 校验 CatID 和 SiteID 是否存在
+	var errors []string
+
+	_, err := ctrl.catRepo.FindByID(event.CatID)
+	if err != nil {
+		errors = append(errors, "CatID does not exist")
+	}
+
+	_, err = ctrl.siteRepo.FindByID(event.SiteID)
+	if err != nil {
+		errors = append(errors, "SiteID does not exist")
+	}
+
+	if len(errors) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": errors})
+		return
+	}
+
 	if err := ctrl.repo.Create(&event); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

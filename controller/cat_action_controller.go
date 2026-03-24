@@ -12,14 +12,18 @@ import (
 
 // CatActionController CatAction 处理器
 type CatActionController struct {
-	repo           *repository.CatActionRepository
+	repo            *repository.CatActionRepository
+	catRepo         *repository.CatRepository
+	siteRepo        *repository.SiteRepository
 	actionProcessor *middleware.ActionProcessor
 }
 
 // NewCatActionController 创建 CatActionController 实例
-func NewCatActionController(repo *repository.CatActionRepository, actionProcessor *middleware.ActionProcessor) *CatActionController {
+func NewCatActionController(repo *repository.CatActionRepository, catRepo *repository.CatRepository, siteRepo *repository.SiteRepository, actionProcessor *middleware.ActionProcessor) *CatActionController {
 	return &CatActionController{
-		repo:           repo,
+		repo:            repo,
+		catRepo:         catRepo,
+		siteRepo:        siteRepo,
 		actionProcessor: actionProcessor,
 	}
 }
@@ -124,6 +128,24 @@ func (ctrl *CatActionController) CreateCatAction(c *gin.Context) {
 	var action model.CatAction
 	if err := c.ShouldBindJSON(&action); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 校验 CatID 和 SiteID 是否存在
+	var errors []string
+
+	_, err := ctrl.catRepo.FindByID(action.CatID)
+	if err != nil {
+		errors = append(errors, "CatID does not exist")
+	}
+
+	_, err = ctrl.siteRepo.FindByID(action.SiteID)
+	if err != nil {
+		errors = append(errors, "SiteID does not exist")
+	}
+
+	if len(errors) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": errors})
 		return
 	}
 

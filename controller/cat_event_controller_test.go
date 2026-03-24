@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"fifu.fun/cat-dataserver/database"
 	"fifu.fun/cat-dataserver/model"
@@ -18,7 +19,35 @@ func setupCatEventController() *CatEventController {
 	gin.SetMode(gin.TestMode)
 	database.InitDB(":memory:")
 	repo := repository.NewCatEventRepository()
-	return NewCatEventController(repo)
+	catRepo := repository.NewCatRepository()
+	siteRepo := repository.NewSiteRepository()
+
+	// 创建测试用的 Site 记录
+	testSite := &model.Site{
+		SiteID:               1,
+		SiteName:             "测试站点",
+		SiteAddress:          "测试地址",
+		SiteAdminPhoneNumber: "13800138000",
+		LastDisinfectTime:    time.Now(),
+		LastFeedTime:         time.Now(),
+		LastGiveWaterTime:    time.Now(),
+		LastPlayTime:         time.Now(),
+	}
+	siteRepo.Create(testSite)
+
+	// 创建测试用的 Cat 记录
+	testCat := &model.Cat{
+		CatID:             1,
+		CatName:           "测试猫",
+		CatPhotoUri:       "http://example.com/photo.jpg",
+		CatType:           "英国短毛猫",
+		CatGender:         "公",
+		MasterName:        "测试主人",
+		MasterPhoneNumber: "13900139000",
+	}
+	catRepo.Create(testCat)
+
+	return NewCatEventController(repo, catRepo, siteRepo)
 }
 
 func TestCreateCatEvent(t *testing.T) {
@@ -206,12 +235,98 @@ func TestDeleteCatEvent(t *testing.T) {
 
 func TestNewCatEventController(t *testing.T) {
 	repo := repository.NewCatEventRepository()
-	ctrl := NewCatEventController(repo)
+	catRepo := repository.NewCatRepository()
+	siteRepo := repository.NewSiteRepository()
+	ctrl := NewCatEventController(repo, catRepo, siteRepo)
 
 	if ctrl == nil {
 		t.Error("Expected non-nil controller")
 	}
 	if ctrl.repo != repo {
 		t.Error("Controller repo does not match input repo")
+	}
+}
+
+// 测试创建 CatEvent 时使用无效的 CatID
+func TestCreateCatEventWithInvalidCatID(t *testing.T) {
+	ctrl := setupCatEventController()
+
+	newEvent := model.CatEvent{
+		EventID:   1,
+		CatID:     999, // 不存在的 CatID
+		SiteID:    1,
+		EventType: model.CatSick,
+		Detail:    "测试无效的 CatID",
+	}
+
+	body, _ := json.Marshal(newEvent)
+	req, _ := http.NewRequest("POST", "/cat-events", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = req
+
+	ctrl.CreateCatEvent(c)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, w.Code)
+	}
+
+	var response map[string]interface{}
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	if err != nil {
+		t.Fatalf("Failed to parse response: %v", err)
+	}
+
+	errors, ok := response["errors"].([]interface{})
+	if !ok || len(errors) != 1 {
+		t.Fatalf("Expected errors array with 1 element, got: %v", response["errors"])
+	}
+
+	if errors[0] != "CatID does not exist" {
+		t.Errorf("Expected error message 'CatID does not exist', got '%s'", errors[0])
+	}
+}
+
+// 测试创建 CatEvent 时使用无效的 SiteID
+func TestCreateCatEventWithInvalidSiteID(t *testing.T) {
+	ctrl := setupCatEventController()
+
+	newEvent := model.CatEvent{
+		EventID:   1,
+		CatID:     1,   // 有效的 CatID
+		SiteID:    999, // 不存在的 SiteID
+		EventType: model.CatSick,
+		Detail:    "测试无效的 SiteID",
+	}
+
+	body, _ := json.Marshal(newEvent)
+	req, _ := http.NewRequest("POST", "/cat-events", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = req
+
+	ctrl.CreateCatEvent(c)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, w.Code)
+	}
+
+	var response map[string]interface{}
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	if err != nil {
+		t.Fatalf("Failed to parse response: %v", err)
+	}
+
+	errors, ok := response["errors"].([]interface{})
+	if !ok || len(errors) != 1 {
+		t.Fatalf("Expected errors array with 1 element, got: %v", response["errors"])
+	}
+
+	if errors[0] != "SiteID does not exist" {
+		t.Errorf("Expected error message 'SiteID does not exist', got '%s'", errors[0])
 	}
 }
