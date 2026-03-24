@@ -88,6 +88,19 @@ func (ctrl *SiteController) UpdateSite(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	// 更新字段
+	if updates.SiteID != 0 {
+		site.SiteID = updates.SiteID
+	}
+	if updates.SiteName != "" {
+		site.SiteName = updates.SiteName
+	}
+	if updates.SiteAddress != "" {
+		site.SiteAddress = updates.SiteAddress
+	}
+	if updates.SiteAdminPhoneNumber != "" {
+		site.SiteAdminPhoneNumber = updates.SiteAdminPhoneNumber
+	}
 	if err := ctrl.repo.Update(site); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -108,96 +121,4 @@ func (ctrl *SiteController) DeleteSite(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Site deleted successfully"})
-}
-
-// UpdateDisinfectTime 更新消毒时间
-func (ctrl *SiteController) UpdateDisinfectTime(c *gin.Context) {
-	siteIDStr := c.Param("site_id")
-	siteID, err := strconv.ParseUint(siteIDStr, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid SiteID"})
-		return
-	}
-	type TimeUpdate struct {
-		Time string `json:"time"`
-	}
-	var update TimeUpdate
-	if err := c.ShouldBindJSON(&update); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if err := ctrl.repo.UpdateDisinfectTime(uint(siteID), update.Time); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"message": "Disinfect time updated successfully"})
-}
-
-// UpdateFeedTime 更新喂食时间
-func (ctrl *SiteController) UpdateFeedTime(c *gin.Context) {
-	siteIDStr := c.Param("site_id")
-	siteID, err := strconv.ParseUint(siteIDStr, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid SiteID"})
-		return
-	}
-	type TimeUpdate struct {
-		Time string `json:"time"`
-	}
-	var update TimeUpdate
-	if err := c.ShouldBindJSON(&update); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if err := ctrl.repo.UpdateFeedTime(uint(siteID), update.Time); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"message": "Feed time updated successfully"})
-}
-
-// UpdateGiveWaterTime 更新喂水时间
-func (ctrl *SiteController) UpdateGiveWaterTime(c *gin.Context) {
-	siteIDStr := c.Param("site_id")
-	siteID, err := strconv.ParseUint(siteIDStr, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid SiteID"})
-		return
-	}
-	type TimeUpdate struct {
-		Time string `json:"time"`
-	}
-	var update TimeUpdate
-	if err := c.ShouldBindJSON(&update); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if err := ctrl.repo.UpdateGiveWaterTime(uint(siteID), update.Time); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"message": "Give water time updated successfully"})
-}
-
-// UpdatePlayTime 更新逗猫时间
-func (ctrl *SiteController) UpdatePlayTime(c *gin.Context) {
-	siteIDStr := c.Param("site_id")
-	siteID, err := strconv.ParseUint(siteIDStr, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid SiteID"})
-		return
-	}
-	type TimeUpdate struct {
-		Time string `json:"time"`
-	}
-	var update TimeUpdate
-	if err := c.ShouldBindJSON(&update); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if err := ctrl.repo.UpdatePlayTime(uint(siteID), update.Time); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"message": "Play time updated successfully"})
 }

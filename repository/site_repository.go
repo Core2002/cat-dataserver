@@ -13,7 +13,6 @@ func NewSiteRepository() *SiteRepository {
 	return &SiteRepository{}
 }
 
-
 // FindPage 分页查询 Site
 func (r *SiteRepository) FindPage(page, pageSize int) ([]model.Site, int64, error) {
 	var sites []model.Site
@@ -61,24 +60,4 @@ func (r *SiteRepository) Update(site *model.Site) error {
 // Delete 删除 Site
 func (r *SiteRepository) Delete(siteID uint) error {
 	return database.DB.Delete(&model.Site{}, siteID).Error
-}
-
-// UpdateDisinfectTime 更新消毒时间
-func (r *SiteRepository) UpdateDisinfectTime(siteID uint, time interface{}) error {
-	return database.DB.Model(&model.Site{}).Where("site_id = ?", siteID).Update("last_disinfect_time", time).Error
-}
-
-// UpdateFeedTime 更新喂食时间
-func (r *SiteRepository) UpdateFeedTime(siteID uint, time interface{}) error {
-	return database.DB.Model(&model.Site{}).Where("site_id = ?", siteID).Update("last_feed_time", time).Error
-}
-
-// UpdateGiveWaterTime 更新喂水时间
-func (r *SiteRepository) UpdateGiveWaterTime(siteID uint, time interface{}) error {
-	return database.DB.Model(&model.Site{}).Where("site_id = ?", siteID).Update("last_give_water_time", time).Error
-}
-
-// UpdatePlayTime 更新逗猫时间
-func (r *SiteRepository) UpdatePlayTime(siteID uint, time interface{}) error {
-	return database.DB.Model(&model.Site{}).Where("site_id = ?", siteID).Update("last_play_time", time).Error
 }

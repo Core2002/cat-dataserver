@@ -60,6 +60,7 @@ func TestSetupRouter(t *testing.T) {
 		"POST:/cat-actions",
 		"POST:/cat-fsms",
 		"POST:/sites",
+		"POST:/site-fsms",
 	}
 
 	for _, expectedRoute := range expectedRoutes {
@@ -200,10 +201,37 @@ func TestSiteRoutes(t *testing.T) {
 	}{
 		{"GET sites page", "GET", "/sites/page", http.StatusBadRequest},
 		{"POST create site", "POST", "/sites", http.StatusBadRequest},
-		{"PATCH update disinfect time", "PATCH", "/sites/1/disinfect-time", http.StatusBadRequest},
-		{"PATCH update feed time", "PATCH", "/sites/1/feed-time", http.StatusBadRequest},
-		{"PATCH update give water time", "PATCH", "/sites/1/give-water-time", http.StatusBadRequest},
-		{"PATCH update play time", "PATCH", "/sites/1/play-time", http.StatusBadRequest},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, _ := http.NewRequest(tt.method, tt.path, nil)
+			w := httptest.NewRecorder()
+
+			router.ServeHTTP(w, req)
+
+			if w.Code != tt.expectedStatus {
+				t.Errorf("Expected status code %d, got %d", tt.expectedStatus, w.Code)
+			}
+		})
+	}
+}
+
+func TestSiteFSMRoutes(t *testing.T) {
+	router := setupTestRouter()
+
+	tests := []struct {
+		name           string
+		method         string
+		path           string
+		expectedStatus int
+	}{
+		{"GET FSM by site ID", "GET", "/site-fsms/site/1", http.StatusNotFound}, // 数据库中无数据
+		{"POST create FSM", "POST", "/site-fsms", http.StatusBadRequest},
+		{"PATCH update disinfect time", "PATCH", "/site-fsms/1/disinfect-time", http.StatusBadRequest},
+		{"PATCH update feed time", "PATCH", "/site-fsms/1/feed-time", http.StatusBadRequest},
+		{"PATCH update give water time", "PATCH", "/site-fsms/1/give-water-time", http.StatusBadRequest},
+		{"PATCH update play time", "PATCH", "/site-fsms/1/play-time", http.StatusBadRequest},
 	}
 
 	for _, tt := range tests {

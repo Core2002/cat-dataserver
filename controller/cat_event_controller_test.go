@@ -6,18 +6,26 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"fifu.fun/cat-dataserver/database"
+	"fifu.fun/cat-dataserver/middleware"
 	"fifu.fun/cat-dataserver/model"
 	"fifu.fun/cat-dataserver/repository"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 func setupCatEventController() *CatEventController {
 	gin.SetMode(gin.TestMode)
 	database.InitDB(":memory:")
+
+	// 注册自定义验证器
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		middleware.RegisterCustomValidators(v)
+	}
+
 	repo := repository.NewCatEventRepository()
 	catRepo := repository.NewCatRepository()
 	siteRepo := repository.NewSiteRepository()
@@ -28,10 +36,6 @@ func setupCatEventController() *CatEventController {
 		SiteName:             "测试站点",
 		SiteAddress:          "测试地址",
 		SiteAdminPhoneNumber: "13800138000",
-		LastDisinfectTime:    time.Now(),
-		LastFeedTime:         time.Now(),
-		LastGiveWaterTime:    time.Now(),
-		LastPlayTime:         time.Now(),
 	}
 	siteRepo.Create(testSite)
 
@@ -64,6 +68,7 @@ func TestCreateCatEvent(t *testing.T) {
 	body, _ := json.Marshal(newEvent)
 	req, _ := http.NewRequest("POST", "/cat-events", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-User-ID", "1")
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -72,7 +77,7 @@ func TestCreateCatEvent(t *testing.T) {
 	ctrl.CreateCatEvent(c)
 
 	if w.Code != http.StatusCreated {
-		t.Errorf("Expected status code %d, got %d", http.StatusCreated, w.Code)
+		t.Errorf("Expected status code %d, got %d, response: %s", http.StatusCreated, w.Code, w.Body.String())
 	}
 
 	var response model.CatEvent
@@ -237,6 +242,7 @@ func TestCreateCatEventWithInvalidCatID(t *testing.T) {
 	body, _ := json.Marshal(newEvent)
 	req, _ := http.NewRequest("POST", "/cat-events", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-User-ID", "1")
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -279,6 +285,7 @@ func TestCreateCatEventWithInvalidSiteID(t *testing.T) {
 	body, _ := json.Marshal(newEvent)
 	req, _ := http.NewRequest("POST", "/cat-events", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-User-ID", "1")
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)

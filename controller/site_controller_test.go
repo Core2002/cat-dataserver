@@ -29,10 +29,6 @@ func TestCreateSite(t *testing.T) {
 		SiteName:             "测试站点",
 		SiteAddress:          "测试地址",
 		SiteAdminPhoneNumber: "13900139000",
-		LastDisinfectTime:    model.TimeNow(),
-		LastFeedTime:         model.TimeNow(),
-		LastGiveWaterTime:    model.TimeNow(),
-		LastPlayTime:         model.TimeNow(),
 	}
 
 	body, _ := json.Marshal(newSite)
@@ -150,105 +146,7 @@ func TestDeleteSite(t *testing.T) {
 	}
 }
 
-func TestUpdateDisinfectTime(t *testing.T) {
-	ctrl := setupSiteController()
-
-	timeUpdate := struct {
-		Time string `json:"time"`
-	}{
-		Time: "2024-01-01 12:00:00",
-	}
-
-	body, _ := json.Marshal(timeUpdate)
-	req, _ := http.NewRequest("PATCH", "/sites/1/disinfect-time", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = req
-	c.Params = []gin.Param{{Key: "site_id", Value: "1"}}
-
-	ctrl.UpdateDisinfectTime(c)
-
-	if w.Code != http.StatusOK && w.Code != http.StatusInternalServerError {
-		t.Errorf("Expected status code %d or %d, got %d", http.StatusOK, http.StatusInternalServerError, w.Code)
-	}
-}
-
-func TestUpdateFeedTime(t *testing.T) {
-	ctrl := setupSiteController()
-
-	timeUpdate := struct {
-		Time string `json:"time"`
-	}{
-		Time: "2024-01-01 12:00:00",
-	}
-
-	body, _ := json.Marshal(timeUpdate)
-	req, _ := http.NewRequest("PATCH", "/sites/1/feed-time", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = req
-	c.Params = []gin.Param{{Key: "site_id", Value: "1"}}
-
-	ctrl.UpdateFeedTime(c)
-
-	if w.Code != http.StatusOK && w.Code != http.StatusInternalServerError {
-		t.Errorf("Expected status code %d or %d, got %d", http.StatusOK, http.StatusInternalServerError, w.Code)
-	}
-}
-
-func TestUpdateGiveWaterTime(t *testing.T) {
-	ctrl := setupSiteController()
-
-	timeUpdate := struct {
-		Time string `json:"time"`
-	}{
-		Time: "2024-01-01 12:00:00",
-	}
-
-	body, _ := json.Marshal(timeUpdate)
-	req, _ := http.NewRequest("PATCH", "/sites/1/give-water-time", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = req
-	c.Params = []gin.Param{{Key: "site_id", Value: "1"}}
-
-	ctrl.UpdateGiveWaterTime(c)
-
-	if w.Code != http.StatusOK && w.Code != http.StatusInternalServerError {
-		t.Errorf("Expected status code %d or %d, got %d", http.StatusOK, http.StatusInternalServerError, w.Code)
-	}
-}
-
-func TestUpdatePlayTime(t *testing.T) {
-	ctrl := setupSiteController()
-
-	timeUpdate := struct {
-		Time string `json:"time"`
-	}{
-		Time: "2024-01-01 12:00:00",
-	}
-
-	body, _ := json.Marshal(timeUpdate)
-	req, _ := http.NewRequest("PATCH", "/sites/1/play-time", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = req
-	c.Params = []gin.Param{{Key: "site_id", Value: "1"}}
-
-	ctrl.UpdatePlayTime(c)
-
-	if w.Code != http.StatusOK && w.Code != http.StatusInternalServerError {
-		t.Errorf("Expected status code %d or %d, got %d", http.StatusOK, http.StatusInternalServerError, w.Code)
-	}
-}
+// 时间更新测试已移至 site_fsm_controller_test.go
 
 func TestNewSiteController(t *testing.T) {
 	repo := repository.NewSiteRepository()

@@ -15,10 +15,6 @@ func TestSiteRepositoryCreate(t *testing.T) {
 		SiteName:             "测试站点",
 		SiteAddress:          "测试地址",
 		SiteAdminPhoneNumber: "13900139000",
-		LastDisinfectTime:    model.TimeNow(),
-		LastFeedTime:         model.TimeNow(),
-		LastGiveWaterTime:    model.TimeNow(),
-		LastPlayTime:         model.TimeNow(),
 	}
 
 	err := repo.Create(site)
@@ -40,10 +36,6 @@ func TestSiteRepositoryFindByID(t *testing.T) {
 		SiteName:             "测试站点",
 		SiteAddress:          "测试地址",
 		SiteAdminPhoneNumber: "13900139000",
-		LastDisinfectTime:    model.TimeNow(),
-		LastFeedTime:         model.TimeNow(),
-		LastGiveWaterTime:    model.TimeNow(),
-		LastPlayTime:         model.TimeNow(),
 	}
 	repo.Create(site)
 
@@ -66,10 +58,6 @@ func TestSiteRepositoryUpdate(t *testing.T) {
 		SiteName:             "测试站点",
 		SiteAddress:          "测试地址",
 		SiteAdminPhoneNumber: "13900139000",
-		LastDisinfectTime:    model.TimeNow(),
-		LastFeedTime:         model.TimeNow(),
-		LastGiveWaterTime:    model.TimeNow(),
-		LastPlayTime:         model.TimeNow(),
 	}
 	repo.Create(site)
 
@@ -94,10 +82,6 @@ func TestSiteRepositoryDelete(t *testing.T) {
 		SiteName:             "测试站点",
 		SiteAddress:          "测试地址",
 		SiteAdminPhoneNumber: "13900139000",
-		LastDisinfectTime:    model.TimeNow(),
-		LastFeedTime:         model.TimeNow(),
-		LastGiveWaterTime:    model.TimeNow(),
-		LastPlayTime:         model.TimeNow(),
 	}
 	repo.Create(site)
 
@@ -112,118 +96,6 @@ func TestSiteRepositoryDelete(t *testing.T) {
 	}
 }
 
-func TestSiteRepositoryUpdateDisinfectTime(t *testing.T) {
-	setupTestDB(t)
-	repo := NewSiteRepository()
-
-	site := &model.Site{
-		SiteID:               1,
-		SiteName:             "测试站点",
-		SiteAddress:          "测试地址",
-		SiteAdminPhoneNumber: "13900139000",
-		LastDisinfectTime:    model.TimeNow(),
-		LastFeedTime:         model.TimeNow(),
-		LastGiveWaterTime:    model.TimeNow(),
-		LastPlayTime:         model.TimeNow(),
-	}
-	repo.Create(site)
-
-	newTime := "2024-01-01 12:00:00"
-	err := repo.UpdateDisinfectTime(1, newTime)
-	if err != nil {
-		t.Errorf("Failed to update disinfect time: %v", err)
-	}
-
-	updatedSite, _ := repo.FindByID(1)
-	if updatedSite.LastDisinfectTime.IsZero() {
-		t.Error("Expected non-zero disinfect time")
-	}
-}
-
-func TestSiteRepositoryUpdateFeedTime(t *testing.T) {
-	setupTestDB(t)
-	repo := NewSiteRepository()
-
-	site := &model.Site{
-		SiteID:               1,
-		SiteName:             "测试站点",
-		SiteAddress:          "测试地址",
-		SiteAdminPhoneNumber: "13900139000",
-		LastDisinfectTime:    model.TimeNow(),
-		LastFeedTime:         model.TimeNow(),
-		LastGiveWaterTime:    model.TimeNow(),
-		LastPlayTime:         model.TimeNow(),
-	}
-	repo.Create(site)
-
-	newTime := "2024-01-01 12:00:00"
-	err := repo.UpdateFeedTime(1, newTime)
-	if err != nil {
-		t.Errorf("Failed to update feed time: %v", err)
-	}
-
-	updatedSite, _ := repo.FindByID(1)
-	if updatedSite.LastFeedTime.IsZero() {
-		t.Error("Expected non-zero feed time")
-	}
-}
-
-func TestSiteRepositoryUpdateGiveWaterTime(t *testing.T) {
-	setupTestDB(t)
-	repo := NewSiteRepository()
-
-	site := &model.Site{
-		SiteID:               1,
-		SiteName:             "测试站点",
-		SiteAddress:          "测试地址",
-		SiteAdminPhoneNumber: "13900139000",
-		LastDisinfectTime:    model.TimeNow(),
-		LastFeedTime:         model.TimeNow(),
-		LastGiveWaterTime:    model.TimeNow(),
-		LastPlayTime:         model.TimeNow(),
-	}
-	repo.Create(site)
-
-	newTime := "2024-01-01 12:00:00"
-	err := repo.UpdateGiveWaterTime(1, newTime)
-	if err != nil {
-		t.Errorf("Failed to update give water time: %v", err)
-	}
-
-	updatedSite, _ := repo.FindByID(1)
-	if updatedSite.LastGiveWaterTime.IsZero() {
-		t.Error("Expected non-zero give water time")
-	}
-}
-
-func TestSiteRepositoryUpdatePlayTime(t *testing.T) {
-	setupTestDB(t)
-	repo := NewSiteRepository()
-
-	site := &model.Site{
-		SiteID:               1,
-		SiteName:             "测试站点",
-		SiteAddress:          "测试地址",
-		SiteAdminPhoneNumber: "13900139000",
-		LastDisinfectTime:    model.TimeNow(),
-		LastFeedTime:         model.TimeNow(),
-		LastGiveWaterTime:    model.TimeNow(),
-		LastPlayTime:         model.TimeNow(),
-	}
-	repo.Create(site)
-
-	newTime := "2024-01-01 12:00:00"
-	err := repo.UpdatePlayTime(1, newTime)
-	if err != nil {
-		t.Errorf("Failed to update play time: %v", err)
-	}
-
-	updatedSite, _ := repo.FindByID(1)
-	if updatedSite.LastPlayTime.IsZero() {
-		t.Error("Expected non-zero play time")
-	}
-}
-
 func TestSiteRepositoryFindPage(t *testing.T) {
 	setupTestDB(t)
 	repo := NewSiteRepository()
@@ -234,10 +106,6 @@ func TestSiteRepositoryFindPage(t *testing.T) {
 			SiteName:             "测试站点",
 			SiteAddress:          "测试地址",
 			SiteAdminPhoneNumber: "13900139000",
-			LastDisinfectTime:    model.TimeNow(),
-			LastFeedTime:         model.TimeNow(),
-			LastGiveWaterTime:    model.TimeNow(),
-			LastPlayTime:         model.TimeNow(),
 		}
 		repo.Create(site)
 	}

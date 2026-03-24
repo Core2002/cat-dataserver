@@ -121,10 +121,23 @@ func (ctrl *CatActionController) CreateCatAction(c *gin.Context) {
 		return
 	}
 
+	// 从请求头获取 UserID
+	userIDStr := c.GetHeader("X-User-ID")
+	if userIDStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing X-User-ID header"})
+		return
+	}
+	userID, err := strconv.ParseUint(userIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid X-User-ID header"})
+		return
+	}
+	action.UserID = uint(userID)
+
 	// 校验 CatID 和 SiteID 是否存在
 	var errors []string
 
-	_, err := ctrl.catRepo.FindByID(action.CatID)
+	_, err = ctrl.catRepo.FindByID(action.CatID)
 	if err != nil {
 		errors = append(errors, "CatID does not exist")
 	}

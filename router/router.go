@@ -48,6 +48,9 @@ func SetupRouter() *gin.Engine {
 
 	catFSMController := controller.NewCatFSMController(catFSMRepo)
 
+	siteFSMRepo := repository.NewSiteFSMRepository()
+	siteFSMController := controller.NewSiteFSMController(siteFSMRepo)
+
 	siteController := controller.NewSiteController(siteRepo)
 
 	// Cat CRUD 路由
@@ -93,10 +96,17 @@ func SetupRouter() *gin.Engine {
 	r.POST("/sites", siteController.CreateSite)
 	r.PUT("/sites/:id", siteController.UpdateSite)
 	r.DELETE("/sites/:id", siteController.DeleteSite)
-	r.PATCH("/sites/:site_id/disinfect-time", siteController.UpdateDisinfectTime)
-	r.PATCH("/sites/:site_id/feed-time", siteController.UpdateFeedTime)
-	r.PATCH("/sites/:site_id/give-water-time", siteController.UpdateGiveWaterTime)
-	r.PATCH("/sites/:site_id/play-time", siteController.UpdatePlayTime)
+
+	// SiteFSM CRUD 路由
+	r.GET("/site-fsms/:id", siteFSMController.GetSiteFSM)
+	r.GET("/site-fsms/site/:site_id", siteFSMController.GetSiteFSMBySiteID)
+	r.POST("/site-fsms", siteFSMController.CreateSiteFSM)
+	r.PUT("/site-fsms/:id", siteFSMController.UpdateSiteFSM)
+	r.DELETE("/site-fsms/:id", siteFSMController.DeleteSiteFSM)
+	r.PATCH("/site-fsms/:site_id/disinfect-time", siteFSMController.UpdateDisinfectTime)
+	r.PATCH("/site-fsms/:site_id/feed-time", siteFSMController.UpdateFeedTime)
+	r.PATCH("/site-fsms/:site_id/give-water-time", siteFSMController.UpdateGiveWaterTime)
+	r.PATCH("/site-fsms/:site_id/play-time", siteFSMController.UpdatePlayTime)
 
 	// 健康检查
 	r.GET("/health", controller.HealthCheck)

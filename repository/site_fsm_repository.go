@@ -1,0 +1,69 @@
+package repository
+
+import (
+	"fifu.fun/cat-dataserver/database"
+	"fifu.fun/cat-dataserver/model"
+)
+
+// SiteFSMRepository SiteFSM 数据访问层
+type SiteFSMRepository struct{}
+
+// NewSiteFSMRepository 创建 SiteFSMRepository 实例
+func NewSiteFSMRepository() *SiteFSMRepository {
+	return &SiteFSMRepository{}
+}
+
+// FindByID 根据 ID 查找 SiteFSM
+func (r *SiteFSMRepository) FindByID(id uint) (*model.SiteFSM, error) {
+	var fsm model.SiteFSM
+	err := database.DB.First(&fsm, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &fsm, nil
+}
+
+// FindBySiteID 根据 SiteID 查找 SiteFSM
+func (r *SiteFSMRepository) FindBySiteID(siteID uint) (*model.SiteFSM, error) {
+	var fsm model.SiteFSM
+	err := database.DB.Where("site_id = ?", siteID).First(&fsm).Error
+	if err != nil {
+		return nil, err
+	}
+	return &fsm, nil
+}
+
+// Create 创建 SiteFSM
+func (r *SiteFSMRepository) Create(fsm *model.SiteFSM) error {
+	return database.DB.Create(fsm).Error
+}
+
+// Update 更新 SiteFSM
+func (r *SiteFSMRepository) Update(fsm *model.SiteFSM) error {
+	return database.DB.Save(fsm).Error
+}
+
+// Delete 删除 SiteFSM
+func (r *SiteFSMRepository) Delete(id uint) error {
+	return database.DB.Delete(&model.SiteFSM{}, id).Error
+}
+
+// UpdateDisinfectTime 更新消毒时间
+func (r *SiteFSMRepository) UpdateDisinfectTime(siteID uint, timeVal interface{}) error {
+	return database.DB.Model(&model.SiteFSM{}).Where("site_id = ?", siteID).Update("last_disinfect_time", timeVal).Error
+}
+
+// UpdateFeedTime 更新喂食时间
+func (r *SiteFSMRepository) UpdateFeedTime(siteID uint, timeVal interface{}) error {
+	return database.DB.Model(&model.SiteFSM{}).Where("site_id = ?", siteID).Update("last_feed_time", timeVal).Error
+}
+
+// UpdateGiveWaterTime 更新喂水时间
+func (r *SiteFSMRepository) UpdateGiveWaterTime(siteID uint, timeVal interface{}) error {
+	return database.DB.Model(&model.SiteFSM{}).Where("site_id = ?", siteID).Update("last_give_water_time", timeVal).Error
+}
+
+// UpdatePlayTime 更新逗猫时间
+func (r *SiteFSMRepository) UpdatePlayTime(siteID uint, timeVal interface{}) error {
+	return database.DB.Model(&model.SiteFSM{}).Where("site_id = ?", siteID).Update("last_play_time", timeVal).Error
+}
