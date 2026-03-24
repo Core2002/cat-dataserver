@@ -13,13 +13,6 @@ func NewCatActionRepository() *CatActionRepository {
 	return &CatActionRepository{}
 }
 
-// FindAll 查找所有 CatAction
-func (r *CatActionRepository) FindAll() ([]model.CatAction, error) {
-	var actions []model.CatAction
-	err := database.DB.Find(&actions).Error
-	return actions, err
-}
-
 // FindPage 分页查询 CatAction
 func (r *CatActionRepository) FindPage(page, pageSize int) ([]model.CatAction, int64, error) {
 	var actions []model.CatAction

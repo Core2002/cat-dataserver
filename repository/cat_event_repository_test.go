@@ -28,29 +28,6 @@ func TestCatEventRepositoryCreate(t *testing.T) {
 	}
 }
 
-func TestCatEventRepositoryFindAll(t *testing.T) {
-	setupTestDB(t)
-	repo := NewCatEventRepository()
-
-	event := &model.CatEvent{
-		EventID:   1,
-		EventType: model.CatSick,
-		SiteID:    1,
-		CatID:     1,
-		Detail:    "测试事件详情",
-	}
-	repo.Create(event)
-
-	events, err := repo.FindAll()
-	if err != nil {
-		t.Errorf("Failed to find all events: %v", err)
-	}
-
-	if len(events) == 0 {
-		t.Error("Expected at least one event")
-	}
-}
-
 func TestCatEventRepositoryFindByID(t *testing.T) {
 	setupTestDB(t)
 	repo := NewCatEventRepository()

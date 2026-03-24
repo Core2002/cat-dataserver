@@ -60,31 +60,6 @@ func TestCreateSite(t *testing.T) {
 	}
 }
 
-func TestGetSites(t *testing.T) {
-	ctrl := setupSiteController()
-
-	req, _ := http.NewRequest("GET", "/sites", nil)
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = req
-
-	ctrl.GetSites(c)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("Expected status code %d, got %d", http.StatusOK, w.Code)
-	}
-
-	var response []model.Site
-	err := json.Unmarshal(w.Body.Bytes(), &response)
-	if err != nil {
-		t.Fatalf("Failed to parse response: %v", err)
-	}
-
-	if response == nil {
-		t.Error("Expected non-nil response")
-	}
-}
-
 func TestGetSitesPage(t *testing.T) {
 	ctrl := setupSiteController()
 

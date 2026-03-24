@@ -13,12 +13,6 @@ func NewSiteRepository() *SiteRepository {
 	return &SiteRepository{}
 }
 
-// FindAll 查找所有 Site
-func (r *SiteRepository) FindAll() ([]model.Site, error) {
-	var sites []model.Site
-	err := database.DB.Find(&sites).Error
-	return sites, err
-}
 
 // FindPage 分页查询 Site
 func (r *SiteRepository) FindPage(page, pageSize int) ([]model.Site, int64, error) {

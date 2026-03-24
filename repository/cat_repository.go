@@ -13,12 +13,6 @@ func NewCatRepository() *CatRepository {
 	return &CatRepository{}
 }
 
-// FindAll 查找所有 Cat
-func (r *CatRepository) FindAll() ([]model.Cat, error) {
-	var cats []model.Cat
-	err := database.DB.Find(&cats).Error
-	return cats, err
-}
 
 // FindPage 分页查询 Cat
 func (r *CatRepository) FindPage(page, pageSize int) ([]model.Cat, int64, error) {

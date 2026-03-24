@@ -38,31 +38,6 @@ func TestCatRepositoryCreate(t *testing.T) {
 	}
 }
 
-func TestCatRepositoryFindAll(t *testing.T) {
-	setupTestDB(t)
-	repo := NewCatRepository()
-
-	cat := &model.Cat{
-		CatID:             1,
-		CatName:           "测试猫",
-		CatPhotoUri:       "http://example.com/cat.jpg",
-		CatType:           "英国短毛猫",
-		CatGender:         "公",
-		MasterName:        "张三",
-		MasterPhoneNumber: "13800138000",
-	}
-	repo.Create(cat)
-
-	cats, err := repo.FindAll()
-	if err != nil {
-		t.Errorf("Failed to find all cats: %v", err)
-	}
-
-	if len(cats) == 0 {
-		t.Error("Expected at least one cat")
-	}
-}
-
 func TestCatRepositoryFindByID(t *testing.T) {
 	setupTestDB(t)
 	repo := NewCatRepository()

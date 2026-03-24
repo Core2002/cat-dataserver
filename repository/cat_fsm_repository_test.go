@@ -28,29 +28,6 @@ func TestCatFSMRepositoryCreate(t *testing.T) {
 	}
 }
 
-func TestCatFSMRepositoryFindAll(t *testing.T) {
-	setupTestDB(t)
-	repo := NewCatFSMRepository()
-
-	fsm := &model.CatFSM{
-		CatID:         1,
-		SiteID:        1,
-		TemperatureC:  38.5,
-		WeightKG:      4.5,
-		TrimNailsTime: model.TimeNow(),
-	}
-	repo.Create(fsm)
-
-	fsms, err := repo.FindAll()
-	if err != nil {
-		t.Errorf("Failed to find all FSMs: %v", err)
-	}
-
-	if len(fsms) == 0 {
-		t.Error("Expected at least one FSM")
-	}
-}
-
 func TestCatFSMRepositoryFindByID(t *testing.T) {
 	setupTestDB(t)
 	repo := NewCatFSMRepository()

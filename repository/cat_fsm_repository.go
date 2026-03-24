@@ -13,13 +13,6 @@ func NewCatFSMRepository() *CatFSMRepository {
 	return &CatFSMRepository{}
 }
 
-// FindAll 查找所有 CatFSM
-func (r *CatFSMRepository) FindAll() ([]model.CatFSM, error) {
-	var fsms []model.CatFSM
-	err := database.DB.Find(&fsms).Error
-	return fsms, err
-}
-
 // FindPage 分页查询 CatFSM
 func (r *CatFSMRepository) FindPage(page, pageSize int) ([]model.CatFSM, int64, error) {
 	var fsms []model.CatFSM

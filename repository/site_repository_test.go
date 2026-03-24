@@ -31,32 +31,6 @@ func TestSiteRepositoryCreate(t *testing.T) {
 	}
 }
 
-func TestSiteRepositoryFindAll(t *testing.T) {
-	setupTestDB(t)
-	repo := NewSiteRepository()
-
-	site := &model.Site{
-		SiteID:               1,
-		SiteName:             "测试站点",
-		SiteAddress:          "测试地址",
-		SiteAdminPhoneNumber: "13900139000",
-		LastDisinfectTime:    model.TimeNow(),
-		LastFeedTime:         model.TimeNow(),
-		LastGiveWaterTime:    model.TimeNow(),
-		LastPlayTime:         model.TimeNow(),
-	}
-	repo.Create(site)
-
-	sites, err := repo.FindAll()
-	if err != nil {
-		t.Errorf("Failed to find all sites: %v", err)
-	}
-
-	if len(sites) == 0 {
-		t.Error("Expected at least one site")
-	}
-}
-
 func TestSiteRepositoryFindByID(t *testing.T) {
 	setupTestDB(t)
 	repo := NewSiteRepository()

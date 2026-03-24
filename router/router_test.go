@@ -55,15 +55,10 @@ func TestSetupRouter(t *testing.T) {
 
 	expectedRoutes := []string{
 		"GET:/health",
-		"GET:/cats",
 		"POST:/cats",
-		"GET:/cat-events",
 		"POST:/cat-events",
-		"GET:/cat-actions",
 		"POST:/cat-actions",
-		"GET:/cat-fsms",
 		"POST:/cat-fsms",
-		"GET:/sites",
 		"POST:/sites",
 	}
 
@@ -83,7 +78,6 @@ func TestCatRoutes(t *testing.T) {
 		path           string
 		expectedStatus int
 	}{
-		{"GET all cats", "GET", "/cats", http.StatusOK},
 		{"GET cats page", "GET", "/cats/page", http.StatusBadRequest},
 		{"GET single cat (not found)", "GET", "/cats/999", http.StatusNotFound},
 		{"POST create cat", "POST", "/cats", http.StatusBadRequest},
@@ -114,7 +108,6 @@ func TestCatEventRoutes(t *testing.T) {
 		path           string
 		expectedStatus int
 	}{
-		{"GET all events", "GET", "/cat-events", http.StatusOK},
 		{"GET events page", "GET", "/cat-events/page", http.StatusBadRequest},
 		{"GET events by cat ID", "GET", "/cat-events/cat/1", http.StatusOK},
 		{"GET events by site ID", "GET", "/cat-events/site/1", http.StatusOK},
@@ -144,7 +137,6 @@ func TestCatActionRoutes(t *testing.T) {
 		path           string
 		expectedStatus int
 	}{
-		{"GET all actions", "GET", "/cat-actions", http.StatusOK},
 		{"GET actions page", "GET", "/cat-actions/page", http.StatusBadRequest},
 		{"GET actions by cat ID", "GET", "/cat-actions/cat/1", http.StatusOK},
 		{"GET actions by site ID", "GET", "/cat-actions/site/1", http.StatusOK},
@@ -175,7 +167,6 @@ func TestCatFSMRoutes(t *testing.T) {
 		path           string
 		expectedStatus int
 	}{
-		{"GET all FSMs", "GET", "/cat-fsms", http.StatusOK},
 		{"GET FSMs page", "GET", "/cat-fsms/page", http.StatusBadRequest},
 		{"GET FSMs by site ID", "GET", "/cat-fsms/site/1", http.StatusOK},
 		{"POST create FSM", "POST", "/cat-fsms", http.StatusBadRequest},
@@ -207,7 +198,6 @@ func TestSiteRoutes(t *testing.T) {
 		path           string
 		expectedStatus int
 	}{
-		{"GET all sites", "GET", "/sites", http.StatusOK},
 		{"GET sites page", "GET", "/sites/page", http.StatusBadRequest},
 		{"POST create site", "POST", "/sites", http.StatusBadRequest},
 		{"PATCH update disinfect time", "PATCH", "/sites/1/disinfect-time", http.StatusBadRequest},

@@ -29,30 +29,6 @@ func TestCatActionRepositoryCreate(t *testing.T) {
 	}
 }
 
-func TestCatActionRepositoryFindAll(t *testing.T) {
-	setupTestDB(t)
-	repo := NewCatActionRepository()
-
-	action := &model.CatAction{
-		ActionID:     1,
-		CatID:        1,
-		SiteID:       1,
-		UserID:       1,
-		ActionType:   model.CatActionFeed,
-		ActionDetail: "喂食测试",
-	}
-	repo.Create(action)
-
-	actions, err := repo.FindAll()
-	if err != nil {
-		t.Errorf("Failed to find all actions: %v", err)
-	}
-
-	if len(actions) == 0 {
-		t.Error("Expected at least one action")
-	}
-}
-
 func TestCatActionRepositoryFindByID(t *testing.T) {
 	setupTestDB(t)
 	repo := NewCatActionRepository()

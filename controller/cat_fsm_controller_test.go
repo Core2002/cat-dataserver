@@ -57,31 +57,6 @@ func TestCreateCatFSM(t *testing.T) {
 	}
 }
 
-func TestGetCatFSMs(t *testing.T) {
-	ctrl := setupCatFSMController()
-
-	req, _ := http.NewRequest("GET", "/cat-fsms", nil)
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = req
-
-	ctrl.GetCatFSMs(c)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("Expected status code %d, got %d", http.StatusOK, w.Code)
-	}
-
-	var response []model.CatFSM
-	err := json.Unmarshal(w.Body.Bytes(), &response)
-	if err != nil {
-		t.Fatalf("Failed to parse response: %v", err)
-	}
-
-	if response == nil {
-		t.Error("Expected non-nil response")
-	}
-}
-
 func TestGetCatFSMsPage(t *testing.T) {
 	ctrl := setupCatFSMController()
 

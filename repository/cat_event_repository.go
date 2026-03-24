@@ -13,12 +13,6 @@ func NewCatEventRepository() *CatEventRepository {
 	return &CatEventRepository{}
 }
 
-// FindAll 查找所有 CatEvent
-func (r *CatEventRepository) FindAll() ([]model.CatEvent, error) {
-	var events []model.CatEvent
-	err := database.DB.Find(&events).Error
-	return events, err
-}
 
 // FindPage 分页查询 CatEvent
 func (r *CatEventRepository) FindPage(page, pageSize int) ([]model.CatEvent, int64, error) {
