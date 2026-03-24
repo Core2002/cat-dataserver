@@ -28,16 +28,6 @@ func NewCatActionController(repo *repository.CatActionRepository, catRepo *repos
 	}
 }
 
-// GetCatActions 获取所有 CatAction
-func (ctrl *CatActionController) GetCatActions(c *gin.Context) {
-	actions, err := ctrl.repo.FindAll()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, actions)
-}
-
 // GetCatActionsPage 分页获取 CatAction
 func (ctrl *CatActionController) GetCatActionsPage(c *gin.Context) {
 	var req model.PaginationRequest

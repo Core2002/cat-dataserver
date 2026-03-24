@@ -25,16 +25,6 @@ func NewCatEventController(repo *repository.CatEventRepository, catRepo *reposit
 	}
 }
 
-// GetCatEvents 获取所有 CatEvent
-func (ctrl *CatEventController) GetCatEvents(c *gin.Context) {
-	events, err := ctrl.repo.FindAll()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, events)
-}
-
 // GetCatEventsPage 分页获取 CatEvent
 func (ctrl *CatEventController) GetCatEventsPage(c *gin.Context) {
 	var req model.PaginationRequest

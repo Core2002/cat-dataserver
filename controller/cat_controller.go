@@ -19,16 +19,6 @@ func NewCatController(repo *repository.CatRepository) *CatController {
 	return &CatController{repo: repo}
 }
 
-// GetCats 获取所有 Cat
-func (ctrl *CatController) GetCats(c *gin.Context) {
-	cats, err := ctrl.repo.FindAll()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, cats)
-}
-
 // GetCatsPage 分页获取 Cat
 func (ctrl *CatController) GetCatsPage(c *gin.Context) {
 	var req model.PaginationRequest
