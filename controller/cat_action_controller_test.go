@@ -82,9 +82,6 @@ func TestCreateCatAction(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/cat-actions", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-User-ID", "1")
-	req.Header.Set("X-User-ID", "1")
-	req.Header.Set("X-User-ID", "1")
-	req.Header.Set("X-User-ID", "1")
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -294,9 +291,6 @@ func TestCreateCatActionWithInvalidCatID(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/cat-actions", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-User-ID", "1")
-	req.Header.Set("X-User-ID", "1")
-	req.Header.Set("X-User-ID", "1")
-	req.Header.Set("X-User-ID", "1")
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -339,9 +333,6 @@ func TestCreateCatActionWithInvalidSiteID(t *testing.T) {
 	body, _ := json.Marshal(newAction)
 	req, _ := http.NewRequest("POST", "/cat-actions", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-User-ID", "1")
-	req.Header.Set("X-User-ID", "1")
-	req.Header.Set("X-User-ID", "1")
 	req.Header.Set("X-User-ID", "1")
 
 	w := httptest.NewRecorder()

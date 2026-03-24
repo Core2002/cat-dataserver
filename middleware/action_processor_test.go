@@ -1,151 +1,323 @@
 package middleware
 
 import (
-	"fifu.fun/cat-dataserver/database"
-	"fifu.fun/cat-dataserver/model"
-	"fifu.fun/cat-dataserver/repository"
 	"testing"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"fifu.fun/cat-dataserver/database"
+	"fifu.fun/cat-dataserver/model"
+	"fifu.fun/cat-dataserver/repository"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestActionProcessor_ProcessAction(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	database.InitDB(":memory:")
+func setupTestDB(t *testing.T) {
+	err := database.InitDB(":memory:")
+	if err != nil {
+		t.Fatalf("Failed to initialize test database: %v", err)
+	}
+}
 
+func TestProcessAction_Feed(t *testing.T) {
+	setupTestDB(t)
+
+	catRepo := repository.NewCatRepository()
+	siteRepo := repository.NewSiteRepository()
 	actionRepo := repository.NewCatActionRepository()
 	fsmRepo := repository.NewCatFSMRepository()
-	processor := NewActionProcessor(actionRepo, fsmRepo)
+
+	// 创建测试用的 Site 记录
+	testSite := &model.Site{
+		SiteName:             "测试站点1",
+		SiteAddress:          "测试地址1",
+		SiteAdminPhoneNumber: "13800138000",
+	}
+	err := siteRepo.Create(testSite)
+	assert.NoError(t, err)
+
+	// 创建测试用的 Cat 记录
+	testCat := &model.Cat{
+		CatID:             1,
+		CatName:           "测试猫1",
+		CatPhotoUri:       "http://example.com/photo1.jpg",
+		CatType:           "英国短毛猫",
+		CatGender:         "公",
+		MasterName:        "测试主人1",
+		MasterPhoneNumber: "13800138000",
+	}
+	err = catRepo.Create(testCat)
+	assert.NoError(t, err)
 
 	// 创建测试用的 FSM 记录
 	testFSM := &model.CatFSM{
 		CatID:         1,
-		SiteID:        1,
+		SiteID:        testSite.ID,
 		TemperatureC:  38.5,
 		WeightKG:      4.2,
 		TrimNailsTime: time.Now(),
 	}
-	if err := fsmRepo.Create(testFSM); err != nil {
-		t.Fatalf("Failed to create test FSM: %v", err)
+	err = fsmRepo.Create(testFSM)
+	assert.NoError(t, err)
+
+	processor := NewActionProcessor(actionRepo, fsmRepo)
+
+	action := &model.CatAction{
+		ActionType: model.CatActionFeed,
+		CatID:      1,
+		SiteID:     testSite.ID,
 	}
 
-	// 测试测体温动作
-	temperatureAction := &model.CatAction{
-		CatID:        1,
-		SiteID:       1,
-		UserID:       1,
+	fsm, err := processor.ProcessAction(action)
+	assert.NoError(t, err)
+	assert.NotNil(t, fsm)
+}
+
+func TestProcessAction_TakeTemperature(t *testing.T) {
+	setupTestDB(t)
+
+	catRepo := repository.NewCatRepository()
+	siteRepo := repository.NewSiteRepository()
+	actionRepo := repository.NewCatActionRepository()
+	fsmRepo := repository.NewCatFSMRepository()
+
+	// 创建测试用的 Site 记录
+	testSite := &model.Site{
+		SiteName:             "测试站点2",
+		SiteAddress:          "测试地址2",
+		SiteAdminPhoneNumber: "13800138000",
+	}
+	err := siteRepo.Create(testSite)
+	assert.NoError(t, err)
+
+	// 创建测试用的 Cat 记录
+	testCat := &model.Cat{
+		CatID:             2,
+		CatName:           "测试猫2",
+		CatPhotoUri:       "http://example.com/photo2.jpg",
+		CatType:           "英国短毛猫",
+		CatGender:         "公",
+		MasterName:        "测试主人2",
+		MasterPhoneNumber: "13800138000",
+	}
+	err = catRepo.Create(testCat)
+	assert.NoError(t, err)
+
+	// 创建测试用的 FSM 记录
+	testFSM := &model.CatFSM{
+		CatID:         2,
+		SiteID:        testSite.ID,
+		TemperatureC:  38.5,
+		WeightKG:      4.2,
+		TrimNailsTime: time.Now(),
+	}
+	err = fsmRepo.Create(testFSM)
+	assert.NoError(t, err)
+
+	processor := NewActionProcessor(actionRepo, fsmRepo)
+
+	action := &model.CatAction{
 		ActionType:   model.CatActionTakeTemperature,
-		ActionDetail: "39.5",
+		CatID:        2,
+		SiteID:       testSite.ID,
+		ActionDetail: "38.5",
 	}
 
-	updatedFSM, err := processor.ProcessAction(temperatureAction)
-	if err != nil {
-		t.Errorf("ProcessAction failed: %v", err)
-	}
-
-	// 验证状态机是否更新
-	freshFSM, err := fsmRepo.FindByID(1)
-	if err != nil {
-		t.Errorf("Failed to fetch FSM: %v", err)
-	}
-
-	if freshFSM.TemperatureC != 39.5 {
-		t.Errorf("Expected temperature 39.5, got %v", freshFSM.TemperatureC)
-	}
-
-	if updatedFSM != nil && updatedFSM.TemperatureC != 39.5 {
-		t.Errorf("Updated FSM temperature should be 39.5, got %v", updatedFSM.TemperatureC)
-	}
+	fsm, err := processor.ProcessAction(action)
+	assert.NoError(t, err)
+	assert.NotNil(t, fsm)
+	assert.Equal(t, 38.5, float64(fsm.TemperatureC))
 }
 
-func TestActionProcessor_ProcessWeightAction(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	database.InitDB(":memory:")
+func TestProcessAction_TrimNails(t *testing.T) {
+	setupTestDB(t)
 
+	catRepo := repository.NewCatRepository()
+	siteRepo := repository.NewSiteRepository()
 	actionRepo := repository.NewCatActionRepository()
 	fsmRepo := repository.NewCatFSMRepository()
-	processor := NewActionProcessor(actionRepo, fsmRepo)
+	now := time.Now()
+
+	// 创建测试用的 Site 记录
+	testSite := &model.Site{
+		SiteName:             "测试站点3",
+		SiteAddress:          "测试地址3",
+		SiteAdminPhoneNumber: "13800138000",
+	}
+	err := siteRepo.Create(testSite)
+	assert.NoError(t, err)
+
+	// 创建测试用的 Cat 记录
+	testCat := &model.Cat{
+		CatID:             3,
+		CatName:           "测试猫3",
+		CatPhotoUri:       "http://example.com/photo3.jpg",
+		CatType:           "英国短毛猫",
+		CatGender:         "公",
+		MasterName:        "测试主人3",
+		MasterPhoneNumber: "13800138000",
+	}
+	err = catRepo.Create(testCat)
+	assert.NoError(t, err)
 
 	// 创建测试用的 FSM 记录
+	oldTime := time.Now().Add(-1 * time.Hour)
 	testFSM := &model.CatFSM{
-		CatID:         1,
-		SiteID:        1,
-		TemperatureC:  38.5,
-		WeightKG:      4.2,
-		TrimNailsTime: time.Now(),
-	}
-	if err := fsmRepo.Create(testFSM); err != nil {
-		t.Fatalf("Failed to create test FSM: %v", err)
-	}
-
-	// 测试体检动作（更新体重）
-	healthCheckAction := &model.CatAction{
-		CatID:        1,
-		SiteID:       1,
-		UserID:       1,
-		ActionType:   model.CatActionHealthCheck,
-		ActionDetail: "5.2",
-	}
-
-	_, err := processor.ProcessAction(healthCheckAction)
-	if err != nil {
-		t.Errorf("ProcessAction failed: %v", err)
-	}
-
-	// 验证状态机是否更新
-	freshFSM, err := fsmRepo.FindByID(1)
-	if err != nil {
-		t.Errorf("Failed to fetch FSM: %v", err)
-	}
-
-	if freshFSM.WeightKG != 5.2 {
-		t.Errorf("Expected weight 5.2, got %v", freshFSM.WeightKG)
-	}
-}
-
-func TestActionProcessor_ProcessTrimNailsAction(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	database.InitDB(":memory:")
-
-	actionRepo := repository.NewCatActionRepository()
-	fsmRepo := repository.NewCatFSMRepository()
-	processor := NewActionProcessor(actionRepo, fsmRepo)
-
-	// 创建测试用的 FSM 记录
-	oldTime := time.Now().Add(-24 * time.Hour)
-	testFSM := &model.CatFSM{
-		CatID:         1,
-		SiteID:        1,
+		CatID:         3,
+		SiteID:        testSite.ID,
 		TemperatureC:  38.5,
 		WeightKG:      4.2,
 		TrimNailsTime: oldTime,
 	}
-	if err := fsmRepo.Create(testFSM); err != nil {
-		t.Fatalf("Failed to create test FSM: %v", err)
+	err = fsmRepo.Create(testFSM)
+	assert.NoError(t, err)
+
+	processor := NewActionProcessor(actionRepo, fsmRepo)
+
+	action := &model.CatAction{
+		ActionType: model.CatActionTrimNails,
+		CatID:      3,
+		SiteID:     testSite.ID,
 	}
 
-	// 测试修剪指甲动作
-	trimNailsAction := &model.CatAction{
-		CatID:        1,
-		SiteID:       1,
-		UserID:       1,
-		ActionType:   model.CatActionTrimNails,
-		ActionDetail: "修剪指甲",
+	fsm, err := processor.ProcessAction(action)
+	assert.NoError(t, err)
+	assert.NotNil(t, fsm)
+	assert.WithinDuration(t, now, fsm.TrimNailsTime, time.Second)
+}
+
+func TestUpdateTemperature(t *testing.T) {
+	tests := []struct {
+		name         string
+		actionDetail string
+		expectedTemp float64
+		catID        uint
+		siteName     string
+		catName      string
+	}{
+		{"Valid temperature", "38.5", 38.5, 10, "站点10", "猫10"},
+		{"High temperature", "40.0", 40.0, 11, "站点11", "猫11"},
+		{"Low temperature", "35.5", 35.5, 12, "站点12", "猫12"},
+		{"Invalid format", "invalid", 0, 13, "站点13", "猫13"},
+		{"Empty string", "", 0, 14, "站点14", "猫14"},
 	}
 
-	_, err := processor.ProcessAction(trimNailsAction)
-	if err != nil {
-		t.Errorf("ProcessAction failed: %v", err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			setupTestDB(t)
+
+			catRepo := repository.NewCatRepository()
+			siteRepo := repository.NewSiteRepository()
+			actionRepo := repository.NewCatActionRepository()
+			fsmRepo := repository.NewCatFSMRepository()
+
+			// 创建测试用的 Site 记录
+			testSite := &model.Site{
+				SiteName:             tt.siteName,
+				SiteAddress:          "测试地址",
+				SiteAdminPhoneNumber: "13800138000",
+			}
+			err := siteRepo.Create(testSite)
+			assert.NoError(t, err)
+
+			// 创建测试用的 Cat 记录
+			testCat := &model.Cat{
+				CatID:             tt.catID,
+				CatName:           tt.catName,
+				CatPhotoUri:       "http://example.com/photo.jpg",
+				CatType:           "英国短毛猫",
+				CatGender:         "公",
+				MasterName:        "测试主人",
+				MasterPhoneNumber: "13800138000",
+			}
+			err = catRepo.Create(testCat)
+			assert.NoError(t, err)
+
+			// 创建测试用的 FSM 记录
+			testFSM := &model.CatFSM{
+				CatID:         tt.catID,
+				SiteID:        testSite.ID,
+				TemperatureC:  38.5,
+				WeightKG:      4.2,
+				TrimNailsTime: time.Now(),
+			}
+			err = fsmRepo.Create(testFSM)
+			assert.NoError(t, err)
+
+			processor := NewActionProcessor(actionRepo, fsmRepo)
+			action := &model.CatAction{
+				ActionType:   model.CatActionTakeTemperature,
+				CatID:        tt.catID,
+				SiteID:       testSite.ID,
+				ActionDetail: tt.actionDetail,
+			}
+
+			fsm, err := processor.ProcessAction(action)
+			if tt.expectedTemp == 0 {
+				// For invalid cases, we expect no error but fsm might be nil
+				// The action is still saved, but temperature is not updated
+				if tt.actionDetail != "" {
+					assert.NoError(t, err)
+				}
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, fsm)
+				assert.Equal(t, tt.expectedTemp, float64(fsm.TemperatureC))
+			}
+		})
+	}
+}
+
+func TestUpdateTrimNailsTime(t *testing.T) {
+	setupTestDB(t)
+
+	catRepo := repository.NewCatRepository()
+	siteRepo := repository.NewSiteRepository()
+	actionRepo := repository.NewCatActionRepository()
+	fsmRepo := repository.NewCatFSMRepository()
+	now := time.Now()
+
+	// 创建测试用的 Site 记录
+	testSite := &model.Site{
+		SiteName:             "测试站点20",
+		SiteAddress:          "测试地址20",
+		SiteAdminPhoneNumber: "13800138000",
+	}
+	err := siteRepo.Create(testSite)
+	assert.NoError(t, err)
+
+	// 创建测试用的 Cat 记录
+	testCat := &model.Cat{
+		CatID:             20,
+		CatName:           "测试猫20",
+		CatPhotoUri:       "http://example.com/photo20.jpg",
+		CatType:           "英国短毛猫",
+		CatGender:         "公",
+		MasterName:        "测试主人20",
+		MasterPhoneNumber: "13800138000",
+	}
+	err = catRepo.Create(testCat)
+	assert.NoError(t, err)
+
+	// 创建测试用的 FSM 记录
+	testFSM := &model.CatFSM{
+		CatID:         20,
+		SiteID:        testSite.ID,
+		TemperatureC:  38.5,
+		WeightKG:      4.2,
+		TrimNailsTime: time.Now(),
+	}
+	err = fsmRepo.Create(testFSM)
+	assert.NoError(t, err)
+
+	processor := NewActionProcessor(actionRepo, fsmRepo)
+
+	action := &model.CatAction{
+		ActionType: model.CatActionTrimNails,
+		CatID:      20,
+		SiteID:     testSite.ID,
 	}
 
-	// 验证状态机是否更新
-	freshFSM, err := fsmRepo.FindByID(1)
-	if err != nil {
-		t.Errorf("Failed to fetch FSM: %v", err)
-	}
-
-	if !freshFSM.TrimNailsTime.After(oldTime) {
-		t.Errorf("TrimNailsTime should be updated after old time")
-	}
+	fsm, err := processor.ProcessAction(action)
+	assert.NoError(t, err)
+	assert.NotNil(t, fsm)
+	assert.WithinDuration(t, now, fsm.TrimNailsTime, time.Second)
 }

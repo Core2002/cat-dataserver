@@ -27,10 +27,10 @@ func (r *CatFSMRepository) FindPage(page, pageSize int) ([]model.CatFSM, int64, 
 	return fsms, total, err
 }
 
-// FindByID 根据 ID 查找 CatFSM
+// FindByID 根据 CatID 查找 CatFSM
 func (r *CatFSMRepository) FindByID(catID uint) (*model.CatFSM, error) {
 	var fsm model.CatFSM
-	err := database.DB.First(&fsm, catID).Error
+	err := database.DB.Where("cat_id = ?", catID).First(&fsm).Error
 	if err != nil {
 		return nil, err
 	}
