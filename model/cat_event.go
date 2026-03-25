@@ -20,7 +20,7 @@ type CatEvent struct {
 	EventID   uint         `json:"event_id" gorm:"primaryKey" binding:"min=1"`
 	EventType CatEventType `json:"event_type" gorm:"size:100;not null" binding:"required,catEventType"` // 事件项目
 	SiteID    uint         `json:"site_id" gorm:"not null" binding:"required,min=1"`                    // 事件地点
-	UserID    uint         `json:"user_id" gorm:"not null" binding:"omitempty,min=1"`                    // 记录人
+	UserID    uint         `json:"user_id" gorm:"not null" binding:"omitempty,min=1"`                   // 记录人
 	CatID     uint         `json:"cat_id" gorm:"not null" binding:"required,min=1"`                     // 发生事件的猫
 	Detail    string       `json:"detail" gorm:"size:1000;not null" binding:"required,min=1,max=1000"`  // 事件详情
 }
@@ -47,7 +47,7 @@ type CatAction struct {
 	ActionID     uint          `json:"action_id" gorm:"primaryKey" binding:"omitempty,min=1"`
 	CatID        uint          `json:"cat_id" gorm:"not null" binding:"required,min=1"`                           // 被执行的猫
 	SiteID       uint          `json:"site_id" gorm:"not null" binding:"required,min=1"`                          // 执行地点
-	UserID       uint          `json:"user_id" gorm:"not null" binding:"omitempty,min=1"`                          // 执行人
+	UserID       uint          `json:"user_id" gorm:"not null" binding:"omitempty,min=1"`                         // 执行人
 	ActionType   CatActionType `json:"action_type" gorm:"size:100;not null" binding:"required,catActionType"`     // 执行项目
 	ActionDetail string        `json:"action_detail" gorm:"size:1000;not null" binding:"required,min=1,max=1000"` // 事件详情
 }
