@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type Cat struct {
 	gorm.Model
-	CatID             uint   `json:"cat_id" gorm:"primaryKey" binding:"min=1"`                              // 猫ID
+	CatID             uint   `json:"cat_id" gorm:"type:integer;primaryKey;autoIncrement"`                       // 猫ID
 	CatName           string `json:"cat_name" gorm:"size:100;not null" binding:"required,min=1,max=100"`    // 猫名
 	CatPhotoUri       string `json:"cat_photo_uri" gorm:"size:1000;not null" binding:"required,url"`        // 猫照片
 	CatType           string `json:"cat_type" gorm:"size:100;not null" binding:"required,min=1,max=50"`     // 猫种类

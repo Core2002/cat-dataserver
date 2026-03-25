@@ -33,7 +33,7 @@ func (r *CatRepository) FindPage(page, pageSize int) ([]model.Cat, int64, error)
 // FindByID 根据 ID 查找 Cat
 func (r *CatRepository) FindByID(catID uint) (*model.Cat, error) {
 	var cat model.Cat
-	err := database.DB.First(&cat, catID).Error
+	err := database.DB.Where("cat_id = ?", catID).First(&cat).Error
 	if err != nil {
 		return nil, err
 	}
@@ -52,5 +52,5 @@ func (r *CatRepository) Update(cat *model.Cat, updates *model.Cat) error {
 
 // Delete 删除 Cat
 func (r *CatRepository) Delete(catID uint) error {
-	return database.DB.Delete(&model.Cat{}, catID).Error
+	return database.DB.Where("cat_id = ?", catID).Delete(&model.Cat{}).Error
 }
