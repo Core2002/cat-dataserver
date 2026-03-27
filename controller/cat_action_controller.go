@@ -6,6 +6,7 @@ import (
 	"fifu.fun/cat-dataserver/repository"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -155,6 +156,11 @@ func (ctrl *CatActionController) CreateCatAction(c *gin.Context) {
 	// 使用动作处理器处理动作，自动更新状态机
 	updatedFSM, err := ctrl.actionProcessor.ProcessAction(&action)
 	if err != nil {
+		// 判断错误类型，如果是记录不存在相关的错误，返回 400 Bad Request
+		if containsRecordNotFoundError(err.Error()) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -209,4 +215,12 @@ func (ctrl *CatActionController) DeleteCatAction(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "CatAction deleted successfully"})
+}
+
+// containsRecordNotFoundError 检查错误信息是否包含记录不存在的错误
+func containsRecordNotFoundError(errMsg string) bool {
+	return strings.Contains(errMsg, "record not found") ||
+		strings.Contains(errMsg, "CatFSM not found") ||
+		strings.Contains(errMsg, "CatID does not exist") ||
+		strings.Contains(errMsg, "更新状态机失败")
 }

@@ -1,6 +1,9 @@
 package model
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"gorm.io/gorm"
 )
 
@@ -50,4 +53,32 @@ type CatAction struct {
 	UserID       uint          `json:"user_id" gorm:"not null" binding:"omitempty,min=1"`                         // 执行人
 	ActionType   CatActionType `json:"action_type" gorm:"size:100;not null" binding:"required,catActionType"`     // 执行项目
 	ActionDetail string        `json:"action_detail" gorm:"size:1000;not null" binding:"required,min=1,max=1000"` // 事件详情
+}
+
+// TemperatureActionDetail 测体温动作的详细信息
+type TemperatureActionDetail struct {
+	Temperature float32 `json:"temperature" binding:"required,gte=0,lte=50"` // 体温，单位：摄氏度
+}
+
+// WeightActionDetail 测体重动作的详细信息
+type WeightActionDetail struct {
+	Weight float32 `json:"weight" binding:"required,gte=0.1,lte=25"` // 体重，单位：千克
+}
+
+// ParseTemperatureActionDetail 解析测体温动作的详细信息
+func ParseTemperatureActionDetail(detail string) (*TemperatureActionDetail, error) {
+	var actionDetail TemperatureActionDetail
+	if err := json.Unmarshal([]byte(detail), &actionDetail); err != nil {
+		return nil, fmt.Errorf("解析测体温信息失败: %v", err)
+	}
+	return &actionDetail, nil
+}
+
+// ParseWeightActionDetail 解析测体重动作的详细信息
+func ParseWeightActionDetail(detail string) (*WeightActionDetail, error) {
+	var actionDetail WeightActionDetail
+	if err := json.Unmarshal([]byte(detail), &actionDetail); err != nil {
+		return nil, fmt.Errorf("解析测体重信息失败: %v", err)
+	}
+	return &actionDetail, nil
 }

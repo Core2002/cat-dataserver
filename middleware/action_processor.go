@@ -36,10 +36,11 @@ func (p *ActionProcessor) ProcessAction(action *model.CatAction) (*model.CatFSM,
 	// 2. 根据动作类型更新状态机
 	fsm, err := p.updateFSM(action)
 	if err != nil {
-		log.Printf("更新状态机失败: CatID=%d, ActionType=%s, Error=%v",
-			action.CatID, action.ActionType, err)
-		// 即使更新失败，动作记录已经保存，所以返回成功
-		return nil, nil
+		// 状态机更新失败，需要回滚已创建的动作记录
+		if deleteErr := p.actionRepo.Delete(action.ID); deleteErr != nil {
+			return nil, fmt.Errorf("更新状态机失败: %v, 回滚动作记录失败: %v", err, deleteErr)
+		}
+		return nil, fmt.Errorf("更新状态机失败: %v", err)
 	}
 
 	log.Printf("动作处理完成: CatID=%d, ActionType=%s", action.CatID, action.ActionType)
@@ -75,31 +76,31 @@ func (p *ActionProcessor) updateFSM(action *model.CatAction) (*model.CatFSM, err
 
 // updateTemperature 更新体温
 func (p *ActionProcessor) updateTemperature(action *model.CatAction, fsm *model.CatFSM) (*model.CatFSM, error) {
-	temperature := parseTemperature(action.ActionDetail)
-	if temperature == 0 {
-		return fsm, nil // 解析失败则不更新
+	detail, err := model.ParseTemperatureActionDetail(action.ActionDetail)
+	if err != nil {
+		return nil, fmt.Errorf("解析测体温信息失败: %v", err)
 	}
 
-	if err := p.fsmRepo.UpdateTemperature(action.CatID, temperature); err != nil {
-		return nil, err
+	if err := p.fsmRepo.UpdateTemperature(action.CatID, detail.Temperature); err != nil {
+		return nil, fmt.Errorf("更新体温失败: %v", err)
 	}
 
-	fsm.TemperatureC = temperature
+	fsm.TemperatureC = detail.Temperature
 	return fsm, nil
 }
 
 // updateWeight 更新体重
 func (p *ActionProcessor) updateWeight(action *model.CatAction, fsm *model.CatFSM) (*model.CatFSM, error) {
-	weight := parseWeight(action.ActionDetail)
-	if weight == 0 {
-		return fsm, nil // 解析失败则不更新
+	detail, err := model.ParseWeightActionDetail(action.ActionDetail)
+	if err != nil {
+		return nil, fmt.Errorf("解析测体重信息失败: %v", err)
 	}
 
-	if err := p.fsmRepo.UpdateWeight(action.CatID, weight); err != nil {
-		return nil, err
+	if err := p.fsmRepo.UpdateWeight(action.CatID, detail.Weight); err != nil {
+		return nil, fmt.Errorf("更新体重失败: %v", err)
 	}
 
-	fsm.WeightKG = weight
+	fsm.WeightKG = detail.Weight
 	return fsm, nil
 }
 
@@ -112,20 +113,4 @@ func (p *ActionProcessor) updateTrimNailsTime(action *model.CatAction, fsm *mode
 
 	fsm.TrimNailsTime = now
 	return fsm, nil
-}
-
-// parseTemperature 从详情中解析体温值
-func parseTemperature(detail string) float32 {
-	// 简化版本，提取数字部分
-	var temp float32
-	_, _ = fmt.Sscanf(detail, "%f", &temp)
-	return temp
-}
-
-// parseWeight 从详情中解析体重值
-func parseWeight(detail string) float32 {
-	// 简化版本，提取数字部分
-	var weight float32
-	_, _ = fmt.Sscanf(detail, "%f", &weight)
-	return weight
 }
