@@ -24,6 +24,7 @@ func SetupRouter() *gin.Engine {
 		AllowOrigins: []string{
 			"http://localhost:5000",
 			"http://localhost:5173",
+			"http://localhost:9000",
 		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
