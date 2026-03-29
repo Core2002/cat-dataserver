@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -19,13 +20,15 @@ const (
 )
 
 type CatEvent struct {
-	gorm.Model
-	EventID   uint         `json:"event_id" gorm:"primaryKey" binding:"min=1"`
-	EventType CatEventType `json:"event_type" gorm:"size:100;not null" binding:"required,catEventType"` // 事件项目
-	SiteID    uint         `json:"site_id" gorm:"not null" binding:"required,min=1"`                    // 事件地点
-	UserID    uint         `json:"user_id" gorm:"not null" binding:"omitempty,min=1"`                   // 记录人
-	CatID     uint         `json:"cat_id" gorm:"not null" binding:"required,min=1"`                     // 发生事件的猫
-	Detail    string       `json:"detail" gorm:"size:1000;not null" binding:"required,min=1,max=1000"`  // 事件详情
+	ID        uint           `json:"event_id" gorm:"primaryKey"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
+	EventType CatEventType   `json:"event_type" gorm:"size:100;not null" binding:"required,catEventType"` // 事件项目
+	SiteID    uint           `json:"site_id" gorm:"not null" binding:"required,min=1"`                    // 事件地点
+	UserID    uint           `json:"user_id" gorm:"not null" binding:"omitempty,min=1"`                   // 记录人
+	CatID     uint           `json:"cat_id" gorm:"not null" binding:"required,min=1"`                     // 发生事件的猫
+	Detail    string         `json:"detail" gorm:"size:1000;not null" binding:"required,min=1,max=1000"`  // 事件详情
 }
 
 type CatActionType string
@@ -46,13 +49,15 @@ const (
 )
 
 type CatAction struct {
-	gorm.Model
-	ActionID     uint          `json:"action_id" gorm:"primaryKey" binding:"omitempty,min=1"`
-	CatID        uint          `json:"cat_id" gorm:"not null" binding:"required,min=1"`                           // 被执行的猫
-	SiteID       uint          `json:"site_id" gorm:"not null" binding:"required,min=1"`                          // 执行地点
-	UserID       uint          `json:"user_id" gorm:"not null" binding:"omitempty,min=1"`                         // 执行人
-	ActionType   CatActionType `json:"action_type" gorm:"size:100;not null" binding:"required,catActionType"`     // 执行项目
-	ActionDetail string        `json:"action_detail" gorm:"size:1000;not null" binding:"required,min=1,max=1000"` // 事件详情
+	ID           uint           `json:"action_id" gorm:"primaryKey"`
+	CreatedAt    time.Time      `json:"created_at"`
+	UpdatedAt    time.Time      `json:"updated_at"`
+	DeletedAt    gorm.DeletedAt `json:"deleted_at" gorm:"index"`
+	CatID        uint           `json:"cat_id" gorm:"not null" binding:"required,min=1"`                           // 被执行的猫
+	SiteID       uint           `json:"site_id" gorm:"not null" binding:"required,min=1"`                          // 执行地点
+	UserID       uint           `json:"user_id" gorm:"not null" binding:"omitempty,min=1"`                         // 执行人
+	ActionType   CatActionType  `json:"action_type" gorm:"size:100;not null" binding:"required,catActionType"`     // 执行项目
+	ActionDetail string         `json:"action_detail" gorm:"size:1000;not null" binding:"required,min=1,max=1000"` // 事件详情
 }
 
 // TemperatureActionDetail 测体温动作的详细信息

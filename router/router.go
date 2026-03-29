@@ -14,12 +14,12 @@ import (
 // SetupRouter 设置路由
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
-	
+
 	// 注册自定义验证器
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		middleware.RegisterCustomValidators(v)
 	}
-	
+
 	r.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
 			"http://localhost:5000",
@@ -99,6 +99,7 @@ func SetupRouter() *gin.Engine {
 	r.DELETE("/sites/:id", siteController.DeleteSite)
 
 	// SiteFSM CRUD 路由
+	r.GET("/site-fsms/page", siteFSMController.GetSiteFSMsPage)
 	r.GET("/site-fsms/:id", siteFSMController.GetSiteFSM)
 	r.GET("/site-fsms/site/:site_id", siteFSMController.GetSiteFSMBySiteID)
 	r.POST("/site-fsms", siteFSMController.CreateSiteFSM)

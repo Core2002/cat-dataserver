@@ -19,6 +19,27 @@ func NewSiteFSMController(repo *repository.SiteFSMRepository) *SiteFSMController
 	return &SiteFSMController{repo: repo}
 }
 
+// GetSiteFSMsPage 分页获取 SiteFSM
+func (ctrl *SiteFSMController) GetSiteFSMsPage(c *gin.Context) {
+	var req model.PaginationRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	page := req.GetPage()
+	pageSize := req.GetPageSize()
+
+	fsms, total, err := ctrl.repo.FindPage(page, pageSize)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	response := model.NewPaginationResponse(fsms, total, page, pageSize)
+	c.JSON(http.StatusOK, response)
+}
+
 // GetSiteFSM 获取单个 SiteFSM
 func (ctrl *SiteFSMController) GetSiteFSM(c *gin.Context) {
 	idStr := c.Param("id")

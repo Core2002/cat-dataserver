@@ -13,6 +13,24 @@ func NewSiteFSMRepository() *SiteFSMRepository {
 	return &SiteFSMRepository{}
 }
 
+// FindPage 分页查找 SiteFSM
+func (r *SiteFSMRepository) FindPage(page, pageSize int) ([]model.SiteFSM, int64, error) {
+	var fsms []model.SiteFSM
+	var total int64
+
+	offset := (page - 1) * pageSize
+
+	if err := database.DB.Model(&model.SiteFSM{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := database.DB.Offset(offset).Limit(pageSize).Find(&fsms).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return fsms, total, nil
+}
+
 // FindByID 根据 ID 查找 SiteFSM
 func (r *SiteFSMRepository) FindByID(id uint) (*model.SiteFSM, error) {
 	var fsm model.SiteFSM

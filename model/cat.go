@@ -7,10 +7,10 @@ import (
 )
 
 type Cat struct {
-	CatID             uint `gorm:"primarykey"`
-	CreatedAt         time.Time
-	UpdatedAt         time.Time
-	DeletedAt         gorm.DeletedAt `gorm:"index"`
+	CatID             uint           `json:"cat_id" gorm:"primarykey"`
+	CreatedAt         time.Time      `json:"created_at"`
+	UpdatedAt         time.Time      `json:"updated_at"`
+	DeletedAt         gorm.DeletedAt `json:"deleted_at" gorm:"index"`
 	CatName           string         `json:"cat_name" gorm:"size:100;not null" binding:"required,min=1,max=100"`    // 猫名
 	CatPhotoUri       string         `json:"cat_photo_uri" gorm:"size:1000;not null" binding:"required,url"`        // 猫照片
 	CatType           string         `json:"cat_type" gorm:"size:100;not null" binding:"required,min=1,max=50"`     // 猫种类
