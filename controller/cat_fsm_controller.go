@@ -1,10 +1,11 @@
 package controller
 
 import (
-	"fifu.fun/cat-dataserver/model"
-	"fifu.fun/cat-dataserver/repository"
 	"net/http"
 	"strconv"
+
+	"fifu.fun/cat-dataserver/model"
+	"fifu.fun/cat-dataserver/repository"
 
 	"github.com/gin-gonic/gin"
 )
