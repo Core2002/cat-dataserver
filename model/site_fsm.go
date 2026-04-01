@@ -16,7 +16,7 @@ type SiteFSM struct {
 	LastFeedTime      *time.Time     `json:"last_feed_time" gorm:"type:datetime"`       // 上次喂食时间
 	LastGiveWaterTime *time.Time     `json:"last_give_water_time" gorm:"type:datetime"` // 上次喂水时间
 	LastPlayTime      *time.Time     `json:"last_play_time" gorm:"type:datetime"`       // 上次逗猫时间
-	LastCleanLitter   *time.Time     `json:"last_play_time" gorm:"type:datetime"`       // 上次清理猫砂事件
+	LastCleanLitter   *time.Time     `json:"last_clean_litter" gorm:"type:datetime"`    // 上次清理猫砂事件
 }
 
 // TableName 指定表名
