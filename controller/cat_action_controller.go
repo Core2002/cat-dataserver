@@ -1,12 +1,13 @@
 package controller
 
 import (
-	"fifu.fun/cat-dataserver/middleware"
-	"fifu.fun/cat-dataserver/model"
-	"fifu.fun/cat-dataserver/repository"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"fifu.fun/cat-dataserver/middleware"
+	"fifu.fun/cat-dataserver/model"
+	"fifu.fun/cat-dataserver/repository"
 
 	"github.com/gin-gonic/gin"
 )
@@ -52,7 +53,7 @@ func (ctrl *CatActionController) GetCatActionsPage(c *gin.Context) {
 
 // GetCatAction 获取单个 CatAction
 func (ctrl *CatActionController) GetCatAction(c *gin.Context) {
-	idStr := c.Param("id")
+	idStr := c.Param("cat_id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
@@ -179,7 +180,7 @@ func (ctrl *CatActionController) CreateCatAction(c *gin.Context) {
 
 // UpdateCatAction 更新 CatAction
 func (ctrl *CatActionController) UpdateCatAction(c *gin.Context) {
-	idStr := c.Param("id")
+	idStr := c.Param("cat_id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
@@ -204,7 +205,7 @@ func (ctrl *CatActionController) UpdateCatAction(c *gin.Context) {
 
 // DeleteCatAction 删除 CatAction
 func (ctrl *CatActionController) DeleteCatAction(c *gin.Context) {
-	idStr := c.Param("id")
+	idStr := c.Param("cat_id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})

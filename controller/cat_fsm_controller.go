@@ -43,7 +43,7 @@ func (ctrl *CatFSMController) GetCatFSMsPage(c *gin.Context) {
 
 // GetCatFSM 获取单个 CatFSM
 func (ctrl *CatFSMController) GetCatFSM(c *gin.Context) {
-	idStr := c.Param("id")
+	idStr := c.Param("cat_id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
@@ -89,7 +89,7 @@ func (ctrl *CatFSMController) CreateCatFSM(c *gin.Context) {
 
 // UpdateCatFSM 更新 CatFSM
 func (ctrl *CatFSMController) UpdateCatFSM(c *gin.Context) {
-	idStr := c.Param("id")
+	idStr := c.Param("cat_id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
@@ -114,7 +114,7 @@ func (ctrl *CatFSMController) UpdateCatFSM(c *gin.Context) {
 
 // DeleteCatFSM 删除 CatFSM
 func (ctrl *CatFSMController) DeleteCatFSM(c *gin.Context) {
-	idStr := c.Param("id")
+	idStr := c.Param("cat_id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})

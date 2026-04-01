@@ -1,10 +1,11 @@
 package controller
 
 import (
-	"fifu.fun/cat-dataserver/model"
-	"fifu.fun/cat-dataserver/repository"
 	"net/http"
 	"strconv"
+
+	"fifu.fun/cat-dataserver/model"
+	"fifu.fun/cat-dataserver/repository"
 
 	"github.com/gin-gonic/gin"
 )
@@ -42,7 +43,7 @@ func (ctrl *SiteController) GetSitesPage(c *gin.Context) {
 
 // GetSite 获取单个 Site
 func (ctrl *SiteController) GetSite(c *gin.Context) {
-	idStr := c.Param("id")
+	idStr := c.Param("site_id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
@@ -72,7 +73,7 @@ func (ctrl *SiteController) CreateSite(c *gin.Context) {
 
 // UpdateSite 更新 Site
 func (ctrl *SiteController) UpdateSite(c *gin.Context) {
-	idStr := c.Param("id")
+	idStr := c.Param("site_id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
@@ -110,7 +111,7 @@ func (ctrl *SiteController) UpdateSite(c *gin.Context) {
 
 // DeleteSite 删除 Site
 func (ctrl *SiteController) DeleteSite(c *gin.Context) {
-	idStr := c.Param("id")
+	idStr := c.Param("site_id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})

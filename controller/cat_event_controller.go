@@ -1,10 +1,11 @@
 package controller
 
 import (
-	"fifu.fun/cat-dataserver/model"
-	"fifu.fun/cat-dataserver/repository"
 	"net/http"
 	"strconv"
+
+	"fifu.fun/cat-dataserver/model"
+	"fifu.fun/cat-dataserver/repository"
 
 	"github.com/gin-gonic/gin"
 )
@@ -48,7 +49,7 @@ func (ctrl *CatEventController) GetCatEventsPage(c *gin.Context) {
 
 // GetCatEvent 获取单个 CatEvent
 func (ctrl *CatEventController) GetCatEvent(c *gin.Context) {
-	idStr := c.Param("id")
+	idStr := c.Param("cat_id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
@@ -142,7 +143,7 @@ func (ctrl *CatEventController) CreateCatEvent(c *gin.Context) {
 
 // UpdateCatEvent 更新 CatEvent
 func (ctrl *CatEventController) UpdateCatEvent(c *gin.Context) {
-	idStr := c.Param("id")
+	idStr := c.Param("cat_id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
@@ -167,7 +168,7 @@ func (ctrl *CatEventController) UpdateCatEvent(c *gin.Context) {
 
 // DeleteCatEvent 删除 CatEvent
 func (ctrl *CatEventController) DeleteCatEvent(c *gin.Context) {
-	idStr := c.Param("id")
+	idStr := c.Param("cat_id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})

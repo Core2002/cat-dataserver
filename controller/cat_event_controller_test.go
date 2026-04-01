@@ -123,7 +123,7 @@ func TestGetCatEvent(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request = req
-	c.Params = []gin.Param{{Key: "id", Value: "1"}}
+	c.Params = []gin.Param{{Key: "cat_id", Value: "1"}}
 
 	ctrl.GetCatEvent(c)
 
@@ -178,7 +178,7 @@ func TestUpdateCatEvent(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request = req
-	c.Params = []gin.Param{{Key: "id", Value: "1"}}
+	c.Params = []gin.Param{{Key: "cat_id", Value: "1"}}
 
 	ctrl.UpdateCatEvent(c)
 
@@ -194,7 +194,7 @@ func TestDeleteCatEvent(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request = req
-	c.Params = []gin.Param{{Key: "id", Value: "1"}}
+	c.Params = []gin.Param{{Key: "cat_id", Value: "1"}}
 
 	ctrl.DeleteCatEvent(c)
 

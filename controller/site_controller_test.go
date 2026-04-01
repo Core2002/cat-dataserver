@@ -88,7 +88,7 @@ func TestGetSite(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request = req
-	c.Params = []gin.Param{{Key: "id", Value: "1"}}
+	c.Params = []gin.Param{{Key: "site_id", Value: "1"}}
 
 	ctrl.GetSite(c)
 
@@ -111,7 +111,7 @@ func TestUpdateSite(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request = req
-	c.Params = []gin.Param{{Key: "id", Value: "1"}}
+	c.Params = []gin.Param{{Key: "site_id", Value: "1"}}
 
 	ctrl.UpdateSite(c)
 
@@ -127,7 +127,7 @@ func TestDeleteSite(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request = req
-	c.Params = []gin.Param{{Key: "id", Value: "1"}}
+	c.Params = []gin.Param{{Key: "site_id", Value: "1"}}
 
 	ctrl.DeleteSite(c)
 

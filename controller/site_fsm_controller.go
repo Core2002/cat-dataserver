@@ -43,7 +43,7 @@ func (ctrl *SiteFSMController) GetSiteFSMsPage(c *gin.Context) {
 
 // GetSiteFSM 获取单个 SiteFSM
 func (ctrl *SiteFSMController) GetSiteFSM(c *gin.Context) {
-	idStr := c.Param("id")
+	idStr := c.Param("site_id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
@@ -89,7 +89,7 @@ func (ctrl *SiteFSMController) CreateSiteFSM(c *gin.Context) {
 
 // UpdateSiteFSM 更新 SiteFSM
 func (ctrl *SiteFSMController) UpdateSiteFSM(c *gin.Context) {
-	idStr := c.Param("id")
+	idStr := c.Param("site_id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
@@ -133,7 +133,7 @@ func (ctrl *SiteFSMController) UpdateSiteFSM(c *gin.Context) {
 
 // DeleteSiteFSM 删除 SiteFSM
 func (ctrl *SiteFSMController) DeleteSiteFSM(c *gin.Context) {
-	idStr := c.Param("id")
+	idStr := c.Param("site_id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
