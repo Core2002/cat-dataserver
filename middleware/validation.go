@@ -1,9 +1,10 @@
 package middleware
 
 import (
-	"fifu.fun/cat-dataserver/model"
 	"net/http"
 	"strings"
+
+	"fifu.fun/cat-dataserver/model"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -152,15 +153,10 @@ func validateCatEventType(fl validator.FieldLevel) bool {
 func validateCatActionType(fl validator.FieldLevel) bool {
 	value := fl.Field().String()
 	validTypes := []string{
-		string(model.CatActionFeed),
-		string(model.CatActionGiveWater),
 		string(model.CatActionTakeTemperature),
-		string(model.CatActionPlay),
 		string(model.CatActionSterilize),
 		string(model.CatActionHealthCheck),
 		string(model.CatActionDeworm),
-		string(model.CatActionCleanLitter),
-		string(model.CatActionDisinfect),
 		string(model.CatActionTrimNails),
 		string(model.CatActionWashFeet),
 		string(model.CatActionVaccinate),

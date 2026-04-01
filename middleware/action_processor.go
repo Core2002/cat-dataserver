@@ -1,11 +1,12 @@
 package middleware
 
 import (
-	"fifu.fun/cat-dataserver/model"
-	"fifu.fun/cat-dataserver/repository"
 	"fmt"
 	"log"
 	"time"
+
+	"fifu.fun/cat-dataserver/model"
+	"fifu.fun/cat-dataserver/repository"
 )
 
 // ActionProcessor 动作处理器中间件，负责自动处理动作并更新状态机
@@ -60,15 +61,10 @@ func (p *ActionProcessor) updateFSM(action *model.CatAction) (*model.CatFSM, err
 		return p.updateTemperature(action, fsm)
 	case model.CatActionTrimNails:
 		return p.updateTrimNailsTime(action, fsm)
-	case model.CatActionGiveWater, model.CatActionFeed, model.CatActionPlay:
-		// 喂食、喂水、逗猫不需要更新FSM
-		return fsm, nil
 	case model.CatActionHealthCheck:
 		return p.updateWeight(action, fsm)
 	case model.CatActionSterilize, model.CatActionDeworm, model.CatActionVaccinate:
 		return fsm, nil // 医疗类动作暂不更新FSM
-	case model.CatActionCleanLitter, model.CatActionDisinfect, model.CatActionWashFeet:
-		return fsm, nil // 卫生类动作暂不更新FSM
 	default:
 		return fsm, nil
 	}
