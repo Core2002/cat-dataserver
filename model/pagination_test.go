@@ -220,7 +220,7 @@ func TestCatActionTypeConstants(t *testing.T) {
 		{"CatActionCleanLitter", CatActionCleanLitter},
 		{"CatActionDisinfect", CatActionDisinfect},
 		{"CatActionTrimNails", CatActionTrimNails},
-		{"CatActionWashFeet", CatActionWashFeet},
+		{"CatActionBathing", CatActionBathing},
 		{"CatActionVaccinate", CatActionVaccinate},
 	}
 

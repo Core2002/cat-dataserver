@@ -158,7 +158,7 @@ func validateCatActionType(fl validator.FieldLevel) bool {
 		string(model.CatActionHealthCheck),
 		string(model.CatActionDeworm),
 		string(model.CatActionTrimNails),
-		string(model.CatActionWashFeet),
+		string(model.CatActionBathing),
 		string(model.CatActionVaccinate),
 	}
 

@@ -39,7 +39,7 @@ const (
 	CatActionHealthCheck     = "体检"
 	CatActionDeworm          = "驱虫"
 	CatActionTrimNails       = "修剪指甲"
-	CatActionWashFeet        = "洗脚"
+	CatActionBathing         = "洗澡"
 	CatActionVaccinate       = "疫苗"
 )
 
