@@ -105,6 +105,22 @@ func (ctrl *CatFSMController) UpdateCatFSM(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	// 更新字段
+	if updates.CatID != 0 {
+		fsm.CatID = updates.CatID
+	}
+	if updates.SiteID != 0 {
+		fsm.SiteID = updates.SiteID
+	}
+	if updates.TemperatureC != 0 {
+		fsm.TemperatureC = updates.TemperatureC
+	}
+	if updates.WeightKG != 0 {
+		fsm.WeightKG = updates.WeightKG
+	}
+	if !updates.TrimNailsTime.IsZero() {
+		fsm.TrimNailsTime = updates.TrimNailsTime
+	}
 	if err := ctrl.repo.Update(fsm); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
