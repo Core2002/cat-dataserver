@@ -20,7 +20,7 @@ const (
 )
 
 type CatEvent struct {
-	ID        uint           `json:"event_id" gorm:"primaryKey"`
+	EventID   uint           `json:"event_id" gorm:"primaryKey"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
@@ -44,7 +44,7 @@ const (
 )
 
 type CatAction struct {
-	ID           uint           `json:"action_id" gorm:"primaryKey"`
+	ActionID     uint           `json:"action_id" gorm:"primaryKey"`
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`
 	DeletedAt    gorm.DeletedAt `json:"deleted_at" gorm:"index"`

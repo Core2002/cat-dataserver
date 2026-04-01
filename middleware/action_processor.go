@@ -38,7 +38,7 @@ func (p *ActionProcessor) ProcessAction(action *model.CatAction) (*model.CatFSM,
 	fsm, err := p.updateFSM(action)
 	if err != nil {
 		// 状态机更新失败，需要回滚已创建的动作记录
-		if deleteErr := p.actionRepo.Delete(action.ID); deleteErr != nil {
+		if deleteErr := p.actionRepo.Delete(action.ActionID); deleteErr != nil {
 			return nil, fmt.Errorf("更新状态机失败: %v, 回滚动作记录失败: %v", err, deleteErr)
 		}
 		return nil, fmt.Errorf("更新状态机失败: %v", err)

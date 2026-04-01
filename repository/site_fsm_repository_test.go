@@ -25,7 +25,7 @@ func TestSiteFSMRepositoryCreate(t *testing.T) {
 		t.Errorf("Failed to create site FSM: %v", err)
 	}
 
-	if fsm.ID == 0 {
+	if fsm.SiteID == 0 {
 		t.Error("Expected non-zero ID after creation")
 	}
 }
@@ -44,7 +44,7 @@ func TestSiteFSMRepositoryFindByID(t *testing.T) {
 	}
 	repo.Create(fsm)
 
-	foundFSM, err := repo.FindByID(fsm.ID)
+	foundFSM, err := repo.FindByID(fsm.SiteID)
 	if err != nil {
 		t.Errorf("Failed to find site FSM by ID: %v", err)
 	}
@@ -120,12 +120,12 @@ func TestSiteFSMRepositoryDelete(t *testing.T) {
 	}
 	repo.Create(fsm)
 
-	err := repo.Delete(fsm.ID)
+	err := repo.Delete(fsm.SiteID)
 	if err != nil {
 		t.Errorf("Failed to delete site FSM: %v", err)
 	}
 
-	_, err = repo.FindByID(fsm.ID)
+	_, err = repo.FindByID(fsm.SiteID)
 	if err == nil {
 		t.Error("Expected error when finding deleted site FSM")
 	}

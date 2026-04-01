@@ -33,7 +33,7 @@ func TestCatRepositoryCreate(t *testing.T) {
 		t.Errorf("Failed to create cat: %v", err)
 	}
 
-	if cat.ID == 0 {
+	if cat.CatID == 0 {
 		t.Error("Expected non-zero ID after creation")
 	}
 }

@@ -3,14 +3,15 @@ package controller
 import (
 	"bytes"
 	"encoding/json"
-	"fifu.fun/cat-dataserver/database"
-	"fifu.fun/cat-dataserver/middleware"
-	"fifu.fun/cat-dataserver/model"
-	"fifu.fun/cat-dataserver/repository"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"fifu.fun/cat-dataserver/database"
+	"fifu.fun/cat-dataserver/middleware"
+	"fifu.fun/cat-dataserver/model"
+	"fifu.fun/cat-dataserver/repository"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -74,8 +75,8 @@ func TestCreateCatAction(t *testing.T) {
 		CatID:        1,
 		SiteID:       1,
 		UserID:       1,
-		ActionType:   model.CatActionFeed,
-		ActionDetail: "喂食测试",
+		ActionType:   model.CatActionBathing,
+		ActionDetail: "洗澡测试",
 	}
 
 	body, _ := json.Marshal(newAction)
@@ -111,8 +112,8 @@ func TestCreateCatAction(t *testing.T) {
 		actionTypeStr, ok := actionData["action_type"].(string)
 		if !ok {
 			t.Errorf("ActionType should be string or float64")
-		} else if actionTypeStr != string(model.CatActionFeed) {
-			t.Errorf("Expected action type '%s', got '%s'", model.CatActionFeed, actionTypeStr)
+		} else if actionTypeStr != string(model.CatActionBathing) {
+			t.Errorf("Expected action type '%s', got '%s'", model.CatActionBathing, actionTypeStr)
 		}
 	} else {
 		// 如果是 float64，可能是因为 JSON 数字编码
@@ -283,7 +284,7 @@ func TestCreateCatActionWithInvalidCatID(t *testing.T) {
 		CatID:        999, // 不存在的 CatID
 		SiteID:       1,
 		UserID:       1,
-		ActionType:   model.CatActionFeed,
+		ActionType:   model.CatActionBathing,
 		ActionDetail: "测试无效的 CatID",
 	}
 
@@ -326,7 +327,7 @@ func TestCreateCatActionWithInvalidSiteID(t *testing.T) {
 		CatID:        1,   // 有效的 CatID
 		SiteID:       999, // 不存在的 SiteID
 		UserID:       1,
-		ActionType:   model.CatActionFeed,
+		ActionType:   model.CatActionBathing,
 		ActionDetail: "测试无效的 SiteID",
 	}
 

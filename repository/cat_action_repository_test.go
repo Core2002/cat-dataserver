@@ -15,8 +15,8 @@ func TestCatActionRepositoryCreate(t *testing.T) {
 		CatID:        1,
 		SiteID:       1,
 		UserID:       1,
-		ActionType:   model.CatActionFeed,
-		ActionDetail: "喂食测试",
+		ActionType:   model.CatActionBathing,
+		ActionDetail: "洗澡测试",
 	}
 
 	err := repo.Create(action)
@@ -24,7 +24,7 @@ func TestCatActionRepositoryCreate(t *testing.T) {
 		t.Errorf("Failed to create action: %v", err)
 	}
 
-	if action.ID == 0 {
+	if action.ActionID == 0 {
 		t.Error("Expected non-zero ID after creation")
 	}
 }
@@ -38,8 +38,8 @@ func TestCatActionRepositoryFindByID(t *testing.T) {
 		CatID:        1,
 		SiteID:       1,
 		UserID:       1,
-		ActionType:   model.CatActionFeed,
-		ActionDetail: "喂食测试",
+		ActionType:   model.CatActionBathing,
+		ActionDetail: "洗澡测试",
 	}
 	repo.Create(action)
 
@@ -48,8 +48,8 @@ func TestCatActionRepositoryFindByID(t *testing.T) {
 		t.Errorf("Failed to find action by ID: %v", err)
 	}
 
-	if foundAction.ActionType != model.CatActionFeed {
-		t.Errorf("Expected action type '%s', got '%s'", model.CatActionFeed, foundAction.ActionType)
+	if foundAction.ActionType != model.CatActionBathing {
+		t.Errorf("Expected action type '%s', got '%s'", model.CatActionBathing, foundAction.ActionType)
 	}
 }
 
@@ -62,8 +62,8 @@ func TestCatActionRepositoryFindByCatID(t *testing.T) {
 		CatID:        1,
 		SiteID:       1,
 		UserID:       1,
-		ActionType:   model.CatActionFeed,
-		ActionDetail: "喂食测试",
+		ActionType:   model.CatActionTakeTemperature,
+		ActionDetail: "测体温测试",
 	}
 	repo.Create(action)
 
@@ -90,8 +90,8 @@ func TestCatActionRepositoryFindBySiteID(t *testing.T) {
 		CatID:        1,
 		SiteID:       1,
 		UserID:       1,
-		ActionType:   model.CatActionFeed,
-		ActionDetail: "喂食测试",
+		ActionType:   model.CatActionVaccinate,
+		ActionDetail: "疫苗测试",
 	}
 	repo.Create(action)
 
@@ -118,8 +118,8 @@ func TestCatActionRepositoryFindByUserID(t *testing.T) {
 		CatID:        1,
 		SiteID:       1,
 		UserID:       1,
-		ActionType:   model.CatActionFeed,
-		ActionDetail: "喂食测试",
+		ActionType:   model.CatActionDeworm,
+		ActionDetail: "驱虫测试",
 	}
 	repo.Create(action)
 
@@ -146,8 +146,8 @@ func TestCatActionRepositoryUpdate(t *testing.T) {
 		CatID:        1,
 		SiteID:       1,
 		UserID:       1,
-		ActionType:   model.CatActionFeed,
-		ActionDetail: "喂食测试",
+		ActionType:   model.CatActionSterilize,
+		ActionDetail: "绝育测试",
 	}
 	repo.Create(action)
 
@@ -172,8 +172,8 @@ func TestCatActionRepositoryDelete(t *testing.T) {
 		CatID:        1,
 		SiteID:       1,
 		UserID:       1,
-		ActionType:   model.CatActionFeed,
-		ActionDetail: "喂食测试",
+		ActionType:   model.CatActionVaccinate,
+		ActionDetail: "疫苗测试",
 	}
 	repo.Create(action)
 
@@ -198,8 +198,8 @@ func TestCatActionRepositoryFindPage(t *testing.T) {
 			CatID:        1,
 			SiteID:       1,
 			UserID:       1,
-			ActionType:   model.CatActionFeed,
-			ActionDetail: "喂食测试",
+			ActionType:   model.CatActionSterilize,
+			ActionDetail: "绝育测试",
 		}
 		repo.Create(action)
 	}

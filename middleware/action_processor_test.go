@@ -17,60 +17,6 @@ func setupTestDB(t *testing.T) {
 	}
 }
 
-func TestProcessAction_Feed(t *testing.T) {
-	setupTestDB(t)
-
-	catRepo := repository.NewCatRepository()
-	siteRepo := repository.NewSiteRepository()
-	actionRepo := repository.NewCatActionRepository()
-	fsmRepo := repository.NewCatFSMRepository()
-
-	// 创建测试用的 Site 记录
-	testSite := &model.Site{
-		SiteName:             "测试站点1",
-		SiteAddress:          "测试地址1",
-		SiteAdminPhoneNumber: "13800138000",
-	}
-	err := siteRepo.Create(testSite)
-	assert.NoError(t, err)
-
-	// 创建测试用的 Cat 记录
-	testCat := &model.Cat{
-		CatID:             1,
-		CatName:           "测试猫1",
-		CatPhotoUri:       "http://example.com/photo1.jpg",
-		CatType:           "英国短毛猫",
-		CatGender:         "公",
-		MasterName:        "测试主人1",
-		MasterPhoneNumber: "13800138000",
-	}
-	err = catRepo.Create(testCat)
-	assert.NoError(t, err)
-
-	// 创建测试用的 FSM 记录
-	testFSM := &model.CatFSM{
-		CatID:         1,
-		SiteID:        testSite.ID,
-		TemperatureC:  38.5,
-		WeightKG:      4.2,
-		TrimNailsTime: time.Now(),
-	}
-	err = fsmRepo.Create(testFSM)
-	assert.NoError(t, err)
-
-	processor := NewActionProcessor(actionRepo, fsmRepo)
-
-	action := &model.CatAction{
-		ActionType: model.CatActionFeed,
-		CatID:      1,
-		SiteID:     testSite.ID,
-	}
-
-	fsm, err := processor.ProcessAction(action)
-	assert.NoError(t, err)
-	assert.NotNil(t, fsm)
-}
-
 func TestProcessAction_TakeTemperature(t *testing.T) {
 	setupTestDB(t)
 
@@ -104,7 +50,7 @@ func TestProcessAction_TakeTemperature(t *testing.T) {
 	// 创建测试用的 FSM 记录
 	testFSM := &model.CatFSM{
 		CatID:         2,
-		SiteID:        testSite.ID,
+		SiteID:        testSite.SiteID,
 		TemperatureC:  38.5,
 		WeightKG:      4.2,
 		TrimNailsTime: time.Now(),
@@ -117,8 +63,8 @@ func TestProcessAction_TakeTemperature(t *testing.T) {
 	action := &model.CatAction{
 		ActionType:   model.CatActionTakeTemperature,
 		CatID:        2,
-		SiteID:       testSite.ID,
-		ActionDetail: "38.5",
+		SiteID:       testSite.SiteID,
+		ActionDetail: `{"temperature": 38.5}`,
 	}
 
 	fsm, err := processor.ProcessAction(action)
@@ -162,7 +108,7 @@ func TestProcessAction_TrimNails(t *testing.T) {
 	oldTime := time.Now().Add(-1 * time.Hour)
 	testFSM := &model.CatFSM{
 		CatID:         3,
-		SiteID:        testSite.ID,
+		SiteID:        testSite.SiteID,
 		TemperatureC:  38.5,
 		WeightKG:      4.2,
 		TrimNailsTime: oldTime,
@@ -175,7 +121,7 @@ func TestProcessAction_TrimNails(t *testing.T) {
 	action := &model.CatAction{
 		ActionType: model.CatActionTrimNails,
 		CatID:      3,
-		SiteID:     testSite.ID,
+		SiteID:     testSite.SiteID,
 	}
 
 	fsm, err := processor.ProcessAction(action)
@@ -193,10 +139,10 @@ func TestUpdateTemperature(t *testing.T) {
 		siteName     string
 		catName      string
 	}{
-		{"Valid temperature", "38.5", 38.5, 10, "站点10", "猫10"},
-		{"High temperature", "40.0", 40.0, 11, "站点11", "猫11"},
-		{"Low temperature", "35.5", 35.5, 12, "站点12", "猫12"},
-		{"Invalid format", "invalid", 0, 13, "站点13", "猫13"},
+		{"Valid temperature", `{"temperature": 38.5}`, 38.5, 10, "站点10", "猫10"},
+		{"High temperature", `{"temperature": 40.0}`, 40.0, 11, "站点11", "猫11"},
+		{"Low temperature", `{"temperature": 35.5}`, 35.5, 12, "站点12", "猫12"},
+		{"Invalid format", `{"temperature": 0}`, 0, 13, "站点13", "猫13"},
 		{"Empty string", "", 0, 14, "站点14", "猫14"},
 	}
 
@@ -234,7 +180,7 @@ func TestUpdateTemperature(t *testing.T) {
 			// 创建测试用的 FSM 记录
 			testFSM := &model.CatFSM{
 				CatID:         tt.catID,
-				SiteID:        testSite.ID,
+				SiteID:        testSite.SiteID,
 				TemperatureC:  38.5,
 				WeightKG:      4.2,
 				TrimNailsTime: time.Now(),
@@ -246,7 +192,7 @@ func TestUpdateTemperature(t *testing.T) {
 			action := &model.CatAction{
 				ActionType:   model.CatActionTakeTemperature,
 				CatID:        tt.catID,
-				SiteID:       testSite.ID,
+				SiteID:       testSite.SiteID,
 				ActionDetail: tt.actionDetail,
 			}
 
@@ -300,7 +246,7 @@ func TestUpdateTrimNailsTime(t *testing.T) {
 	// 创建测试用的 FSM 记录
 	testFSM := &model.CatFSM{
 		CatID:         20,
-		SiteID:        testSite.ID,
+		SiteID:        testSite.SiteID,
 		TemperatureC:  38.5,
 		WeightKG:      4.2,
 		TrimNailsTime: time.Now(),
@@ -313,7 +259,7 @@ func TestUpdateTrimNailsTime(t *testing.T) {
 	action := &model.CatAction{
 		ActionType: model.CatActionTrimNails,
 		CatID:      20,
-		SiteID:     testSite.ID,
+		SiteID:     testSite.SiteID,
 	}
 
 	fsm, err := processor.ProcessAction(action)

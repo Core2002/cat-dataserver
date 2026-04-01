@@ -23,7 +23,7 @@ func TestCatEventRepositoryCreate(t *testing.T) {
 		t.Errorf("Failed to create event: %v", err)
 	}
 
-	if event.ID == 0 {
+	if event.EventID == 0 {
 		t.Error("Expected non-zero ID after creation")
 	}
 }

@@ -21,7 +21,7 @@ func TestSiteRepositoryCreate(t *testing.T) {
 		t.Errorf("Failed to create site: %v", err)
 	}
 
-	if site.ID == 0 {
+	if site.SiteID == 0 {
 		t.Error("Expected non-zero ID after creation")
 	}
 }
@@ -40,7 +40,7 @@ func TestSiteRepositoryFindByID(t *testing.T) {
 		t.Fatalf("Failed to create test site: %v", err)
 	}
 
-	foundSite, err := repo.FindByID(site.ID)
+	foundSite, err := repo.FindByID(site.SiteID)
 	if err != nil {
 		t.Errorf("Failed to find site by ID: %v", err)
 	}
@@ -64,12 +64,12 @@ func TestSiteRepositoryDelete(t *testing.T) {
 		t.Fatalf("Failed to create test site: %v", err)
 	}
 
-	err = repo.Delete(site.ID)
+	err = repo.Delete(site.SiteID)
 	if err != nil {
 		t.Errorf("Failed to delete site: %v", err)
 	}
 
-	_, err = repo.FindByID(site.ID)
+	_, err = repo.FindByID(site.SiteID)
 	if err == nil {
 		t.Error("Expected error when finding deleted site")
 	}

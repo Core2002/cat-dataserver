@@ -23,7 +23,7 @@ func TestCatFSMRepositoryCreate(t *testing.T) {
 		t.Errorf("Failed to create FSM: %v", err)
 	}
 
-	if fsm.ID == 0 {
+	if fsm.CatID == 0 {
 		t.Error("Expected non-zero ID after creation")
 	}
 }
