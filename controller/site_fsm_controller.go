@@ -1,10 +1,11 @@
 package controller
 
 import (
-	"fifu.fun/cat-dataserver/model"
-	"fifu.fun/cat-dataserver/repository"
 	"net/http"
 	"strconv"
+
+	"fifu.fun/cat-dataserver/model"
+	"fifu.fun/cat-dataserver/repository"
 
 	"github.com/gin-gonic/gin"
 )
@@ -119,6 +120,9 @@ func (ctrl *SiteFSMController) UpdateSiteFSM(c *gin.Context) {
 	}
 	if updates.LastPlayTime != nil {
 		fsm.LastPlayTime = updates.LastPlayTime
+	}
+	if updates.LastCleanLitter != nil {
+		fsm.LastCleanLitter = updates.LastCleanLitter
 	}
 	if err := ctrl.repo.Update(fsm); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

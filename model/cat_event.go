@@ -34,15 +34,10 @@ type CatEvent struct {
 type CatActionType string
 
 const (
-	CatActionFeed            = "喂食"
-	CatActionGiveWater       = "喂水"
 	CatActionTakeTemperature = "测体温"
-	CatActionPlay            = "逗猫"
 	CatActionSterilize       = "绝育"
 	CatActionHealthCheck     = "体检"
 	CatActionDeworm          = "驱虫"
-	CatActionCleanLitter     = "清理猫砂"
-	CatActionDisinfect       = "环境消毒"
 	CatActionTrimNails       = "修剪指甲"
 	CatActionWashFeet        = "洗脚"
 	CatActionVaccinate       = "疫苗"
