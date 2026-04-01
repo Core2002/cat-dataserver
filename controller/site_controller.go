@@ -90,9 +90,6 @@ func (ctrl *SiteController) UpdateSite(c *gin.Context) {
 		return
 	}
 	// 更新字段
-	if updates.SiteID != 0 {
-		site.SiteID = updates.SiteID
-	}
 	if updates.SiteName != "" {
 		site.SiteName = updates.SiteName
 	}

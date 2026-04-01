@@ -106,9 +106,6 @@ func (ctrl *CatFSMController) UpdateCatFSM(c *gin.Context) {
 		return
 	}
 	// 更新字段
-	if updates.CatID != 0 {
-		fsm.CatID = updates.CatID
-	}
 	if updates.SiteID != 0 {
 		fsm.SiteID = updates.SiteID
 	}

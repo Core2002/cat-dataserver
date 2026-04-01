@@ -53,7 +53,7 @@ func (ctrl *CatActionController) GetCatActionsPage(c *gin.Context) {
 
 // GetCatAction 获取单个 CatAction
 func (ctrl *CatActionController) GetCatAction(c *gin.Context) {
-	idStr := c.Param("cat_id")
+	idStr := c.Param("action_id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
@@ -195,6 +195,22 @@ func (ctrl *CatActionController) UpdateCatAction(c *gin.Context) {
 	if err := c.ShouldBindJSON(&updates); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+	// 更新数据
+	if updates.CatID != 0 {
+		action.CatID = updates.CatID
+	}
+	if updates.SiteID != 0 {
+		action.SiteID = updates.SiteID
+	}
+	if updates.UserID != 0 {
+		action.UserID = updates.UserID
+	}
+	if updates.ActionType != "" {
+		action.ActionType = updates.ActionType
+	}
+	if updates.ActionDetail != "" {
+		action.ActionDetail = updates.ActionDetail
 	}
 	if err := ctrl.repo.Update(action); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

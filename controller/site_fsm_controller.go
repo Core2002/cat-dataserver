@@ -106,9 +106,6 @@ func (ctrl *SiteFSMController) UpdateSiteFSM(c *gin.Context) {
 		return
 	}
 	// 更新字段
-	if updates.SiteID != 0 {
-		fsm.SiteID = updates.SiteID
-	}
 	if updates.LastDisinfectTime != nil {
 		fsm.LastDisinfectTime = updates.LastDisinfectTime
 	}

@@ -49,7 +49,7 @@ func (ctrl *CatEventController) GetCatEventsPage(c *gin.Context) {
 
 // GetCatEvent 获取单个 CatEvent
 func (ctrl *CatEventController) GetCatEvent(c *gin.Context) {
-	idStr := c.Param("cat_id")
+	idStr := c.Param("event_id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
@@ -138,7 +138,9 @@ func (ctrl *CatEventController) CreateCatEvent(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, event)
+	c.JSON(http.StatusCreated, gin.H{
+		"event": event,
+	})
 }
 
 // UpdateCatEvent 更新 CatEvent
@@ -158,6 +160,22 @@ func (ctrl *CatEventController) UpdateCatEvent(c *gin.Context) {
 	if err := c.ShouldBindJSON(&updates); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+	// 更新数据
+	if updates.EventType != "" {
+		event.EventType = updates.EventType
+	}
+	if updates.SiteID != 0 {
+		event.SiteID = updates.SiteID
+	}
+	if updates.UserID != 0 {
+		event.UserID = updates.UserID
+	}
+	if updates.CatID != 0 {
+		event.CatID = updates.CatID
+	}
+	if updates.Detail != "" {
+		event.Detail = updates.Detail
 	}
 	if err := ctrl.repo.Update(event); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
