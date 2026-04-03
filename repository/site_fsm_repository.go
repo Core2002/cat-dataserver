@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"time"
+
 	"fifu.fun/cat-dataserver/database"
 	"fifu.fun/cat-dataserver/model"
 )
@@ -51,6 +53,16 @@ func (r *SiteFSMRepository) FindBySiteID(siteID uint) (*model.SiteFSM, error) {
 	return &fsm, nil
 }
 
+// GetOrCreateBySiteID 获取或创建 SiteFSM（原子操作）
+func (r *SiteFSMRepository) GetOrCreateBySiteID(siteID uint) (*model.SiteFSM, error) {
+	var fsm model.SiteFSM
+	result := database.DB.Where(model.SiteFSM{SiteID: siteID}).FirstOrCreate(&fsm)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &fsm, nil
+}
+
 // Create 创建 SiteFSM
 func (r *SiteFSMRepository) Create(fsm *model.SiteFSM) error {
 	return database.DB.Create(fsm).Error
@@ -66,22 +78,77 @@ func (r *SiteFSMRepository) Delete(id uint) error {
 	return database.DB.Delete(&model.SiteFSM{}, id).Error
 }
 
+// parseTime 解析时间字符串，空字符串返回 nil 表示不更新
+func parseTime(timeStr string) (*time.Time, error) {
+	// 空字符串表示不更新
+	if timeStr == "" {
+		return nil, nil
+	}
+
+	// 解析 RFC3339 格式时间
+	t, err := time.Parse(time.RFC3339, timeStr)
+	if err != nil {
+		return nil, err
+	}
+	return &t, nil
+}
+
 // UpdateDisinfectTime 更新消毒时间
-func (r *SiteFSMRepository) UpdateDisinfectTime(siteID uint, timeVal interface{}) error {
-	return database.DB.Model(&model.SiteFSM{}).Where("site_id = ?", siteID).Update("last_disinfect_time", timeVal).Error
+func (r *SiteFSMRepository) UpdateDisinfectTime(siteID uint, timeStr string) error {
+	t, err := parseTime(timeStr)
+	if err != nil {
+		return err
+	}
+	if t == nil {
+		return nil // 空字符串，跳过更新
+	}
+	return database.DB.Model(&model.SiteFSM{}).Where("site_id = ?", siteID).Update("last_disinfect_time", t).Error
 }
 
 // UpdateFeedTime 更新喂食时间
-func (r *SiteFSMRepository) UpdateFeedTime(siteID uint, timeVal interface{}) error {
-	return database.DB.Model(&model.SiteFSM{}).Where("site_id = ?", siteID).Update("last_feed_time", timeVal).Error
+func (r *SiteFSMRepository) UpdateFeedTime(siteID uint, timeStr string) error {
+	t, err := parseTime(timeStr)
+	if err != nil {
+		return err
+	}
+	if t == nil {
+		return nil // 空字符串，跳过更新
+	}
+	return database.DB.Model(&model.SiteFSM{}).Where("site_id = ?", siteID).Update("last_feed_time", t).Error
 }
 
 // UpdateGiveWaterTime 更新喂水时间
-func (r *SiteFSMRepository) UpdateGiveWaterTime(siteID uint, timeVal interface{}) error {
-	return database.DB.Model(&model.SiteFSM{}).Where("site_id = ?", siteID).Update("last_give_water_time", timeVal).Error
+func (r *SiteFSMRepository) UpdateGiveWaterTime(siteID uint, timeStr string) error {
+	t, err := parseTime(timeStr)
+	if err != nil {
+		return err
+	}
+	if t == nil {
+		return nil // 空字符串，跳过更新
+	}
+	return database.DB.Model(&model.SiteFSM{}).Where("site_id = ?", siteID).Update("last_give_water_time", t).Error
 }
 
 // UpdatePlayTime 更新逗猫时间
-func (r *SiteFSMRepository) UpdatePlayTime(siteID uint, timeVal interface{}) error {
-	return database.DB.Model(&model.SiteFSM{}).Where("site_id = ?", siteID).Update("last_play_time", timeVal).Error
+func (r *SiteFSMRepository) UpdatePlayTime(siteID uint, timeStr string) error {
+	t, err := parseTime(timeStr)
+	if err != nil {
+		return err
+	}
+	if t == nil {
+		return nil // 空字符串，跳过更新
+	}
+	return database.DB.Model(&model.SiteFSM{}).Where("site_id = ?", siteID).Update("last_play_time", t).Error
+}
+
+// UpdateCleanLitterTime 更新清理猫砂时间
+func (r *SiteFSMRepository) UpdateCleanLitterTime(siteID uint, timeStr string) error {
+	t, err := parseTime(timeStr)
+	if err != nil {
+		return err
+	}
+	if t == nil {
+		return nil // 空字符串，跳过更新
+	}
+	return database.DB.Model(&model.SiteFSM{}).Where("site_id = ?", siteID).Update("last_clean_litter_time", t).Error
 }

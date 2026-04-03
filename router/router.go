@@ -50,9 +50,9 @@ func SetupRouter() *gin.Engine {
 	catFSMController := controller.NewCatFSMController(catFSMRepo)
 
 	siteFSMRepo := repository.NewSiteFSMRepository()
-	siteFSMController := controller.NewSiteFSMController(siteFSMRepo)
+	siteFSMController := controller.NewSiteFSMController(siteFSMRepo, siteRepo)
 
-	siteController := controller.NewSiteController(siteRepo)
+	siteController := controller.NewSiteController(siteRepo, siteFSMRepo)
 
 	// Cat CRUD 路由
 	r.GET("/cats/page", catController.GetCatsPage)
@@ -109,6 +109,7 @@ func SetupRouter() *gin.Engine {
 	r.PATCH("/site-fsms/:site_id/feed-time", siteFSMController.UpdateFeedTime)
 	r.PATCH("/site-fsms/:site_id/give-water-time", siteFSMController.UpdateGiveWaterTime)
 	r.PATCH("/site-fsms/:site_id/play-time", siteFSMController.UpdatePlayTime)
+	r.PATCH("/site-fsms/:site_id/clean-litter-time", siteFSMController.UpdateCleanLitterTime)
 
 	// 健康检查
 	r.GET("/health", controller.HealthCheck)

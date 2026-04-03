@@ -12,12 +12,13 @@ import (
 
 // SiteController Site 处理器
 type SiteController struct {
-	repo *repository.SiteRepository
+	repo       *repository.SiteRepository
+	siteFSMRepo *repository.SiteFSMRepository
 }
 
 // NewSiteController 创建 SiteController 实例
-func NewSiteController(repo *repository.SiteRepository) *SiteController {
-	return &SiteController{repo: repo}
+func NewSiteController(repo *repository.SiteRepository, siteFSMRepo *repository.SiteFSMRepository) *SiteController {
+	return &SiteController{repo: repo, siteFSMRepo: siteFSMRepo}
 }
 
 // GetSitesPage 分页获取 Site
@@ -65,6 +66,12 @@ func (ctrl *SiteController) CreateSite(c *gin.Context) {
 		return
 	}
 	if err := ctrl.repo.Create(&site); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	// 自动创建对应的 SiteFSM 记录
+	siteFSM := &model.SiteFSM{SiteID: site.SiteID}
+	if err := ctrl.siteFSMRepo.Create(siteFSM); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

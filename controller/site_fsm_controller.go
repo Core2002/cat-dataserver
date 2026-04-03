@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -12,12 +13,13 @@ import (
 
 // SiteFSMController SiteFSM 处理器
 type SiteFSMController struct {
-	repo *repository.SiteFSMRepository
+	repo     *repository.SiteFSMRepository
+	siteRepo *repository.SiteRepository
 }
 
 // NewSiteFSMController 创建 SiteFSMController 实例
-func NewSiteFSMController(repo *repository.SiteFSMRepository) *SiteFSMController {
-	return &SiteFSMController{repo: repo}
+func NewSiteFSMController(repo *repository.SiteFSMRepository, siteRepo *repository.SiteRepository) *SiteFSMController {
+	return &SiteFSMController{repo: repo, siteRepo: siteRepo}
 }
 
 // GetSiteFSMsPage 分页获取 SiteFSM
@@ -106,19 +108,19 @@ func (ctrl *SiteFSMController) UpdateSiteFSM(c *gin.Context) {
 		return
 	}
 	// 更新字段
-	if updates.LastDisinfectTime != nil {
+	if !updates.LastDisinfectTime.IsZero() {
 		fsm.LastDisinfectTime = updates.LastDisinfectTime
 	}
-	if updates.LastFeedTime != nil {
+	if !updates.LastFeedTime.IsZero(){
 		fsm.LastFeedTime = updates.LastFeedTime
 	}
-	if updates.LastGiveWaterTime != nil {
+	if !updates.LastGiveWaterTime.IsZero() {
 		fsm.LastGiveWaterTime = updates.LastGiveWaterTime
 	}
-	if updates.LastPlayTime != nil {
+	if !updates.LastPlayTime.IsZero() {
 		fsm.LastPlayTime = updates.LastPlayTime
 	}
-	if updates.LastCleanLitter != nil {
+	if !updates.LastCleanLitter.IsZero() {
 		fsm.LastCleanLitter = updates.LastCleanLitter
 	}
 	if err := ctrl.repo.Update(fsm); err != nil {
@@ -143,6 +145,17 @@ func (ctrl *SiteFSMController) DeleteSiteFSM(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "SiteFSM deleted successfully"})
 }
 
+// getOrCreateSiteFSM 获取或创建 SiteFSM，如果不存在则自动创建
+func (ctrl *SiteFSMController) getOrCreateSiteFSM(siteID uint) (*model.SiteFSM, error) {
+	// 验证 Site 是否存在
+	_, err := ctrl.siteRepo.FindByID(siteID)
+	if err != nil {
+		return nil, fmt.Errorf("site with ID %d not found", siteID)
+	}
+	// 获取或创建 SiteFSM（原子操作）
+	return ctrl.repo.GetOrCreateBySiteID(siteID)
+}
+
 // UpdateDisinfectTime 更新消毒时间
 func (ctrl *SiteFSMController) UpdateDisinfectTime(c *gin.Context) {
 	siteIDStr := c.Param("site_id")
@@ -151,10 +164,15 @@ func (ctrl *SiteFSMController) UpdateDisinfectTime(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid SiteID"})
 		return
 	}
-	type TimeUpdate struct {
-		Time string `json:"time"`
+	// 获取或创建 SiteFSM
+	fsm, err := ctrl.getOrCreateSiteFSM(uint(siteID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
 	}
-	var update TimeUpdate
+	var update struct {
+		Time string `json:"last_disinfect_time"`
+	}
 	if err := c.ShouldBindJSON(&update); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -163,7 +181,9 @@ func (ctrl *SiteFSMController) UpdateDisinfectTime(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Disinfect time updated successfully"})
+	// 返回更新后的数据
+	fsm, _ = ctrl.repo.FindBySiteID(uint(siteID))
+	c.JSON(http.StatusOK, fsm)
 }
 
 // UpdateFeedTime 更新喂食时间
@@ -174,10 +194,15 @@ func (ctrl *SiteFSMController) UpdateFeedTime(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid SiteID"})
 		return
 	}
-	type TimeUpdate struct {
-		Time string `json:"time"`
+	// 获取或创建 SiteFSM
+	fsm, err := ctrl.getOrCreateSiteFSM(uint(siteID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
 	}
-	var update TimeUpdate
+	var update struct {
+		Time string `json:"last_feed_time"`
+	}
 	if err := c.ShouldBindJSON(&update); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -186,7 +211,9 @@ func (ctrl *SiteFSMController) UpdateFeedTime(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Feed time updated successfully"})
+	// 返回更新后的数据
+	fsm, _ = ctrl.repo.FindBySiteID(uint(siteID))
+	c.JSON(http.StatusOK, fsm)
 }
 
 // UpdateGiveWaterTime 更新喂水时间
@@ -197,10 +224,15 @@ func (ctrl *SiteFSMController) UpdateGiveWaterTime(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid SiteID"})
 		return
 	}
-	type TimeUpdate struct {
-		Time string `json:"time"`
+	// 获取或创建 SiteFSM
+	fsm, err := ctrl.getOrCreateSiteFSM(uint(siteID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
 	}
-	var update TimeUpdate
+	var update struct {
+		Time string `json:"last_give_water_time"`
+	}
 	if err := c.ShouldBindJSON(&update); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -209,7 +241,9 @@ func (ctrl *SiteFSMController) UpdateGiveWaterTime(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Give water time updated successfully"})
+	// 返回更新后的数据
+	fsm, _ = ctrl.repo.FindBySiteID(uint(siteID))
+	c.JSON(http.StatusOK, fsm)
 }
 
 // UpdatePlayTime 更新逗猫时间
@@ -220,10 +254,15 @@ func (ctrl *SiteFSMController) UpdatePlayTime(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid SiteID"})
 		return
 	}
-	type TimeUpdate struct {
-		Time string `json:"time"`
+	// 获取或创建 SiteFSM
+	fsm, err := ctrl.getOrCreateSiteFSM(uint(siteID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
 	}
-	var update TimeUpdate
+	var update struct {
+		Time string `json:"last_play_time"`
+	}
 	if err := c.ShouldBindJSON(&update); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -232,5 +271,37 @@ func (ctrl *SiteFSMController) UpdatePlayTime(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Play time updated successfully"})
+	// 返回更新后的数据
+	fsm, _ = ctrl.repo.FindBySiteID(uint(siteID))
+	c.JSON(http.StatusOK, fsm)
+}
+
+// UpdateCleanLitterTime 更新清理猫砂时间
+func (ctrl *SiteFSMController) UpdateCleanLitterTime(c *gin.Context) {
+	siteIDStr := c.Param("site_id")
+	siteID, err := strconv.ParseUint(siteIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid SiteID"})
+		return
+	}
+	// 获取或创建 SiteFSM
+	fsm, err := ctrl.getOrCreateSiteFSM(uint(siteID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	var update struct {
+		Time string `json:"last_clean_litter_time"`
+	}
+	if err := c.ShouldBindJSON(&update); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := ctrl.repo.UpdateCleanLitterTime(uint(siteID), update.Time); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	// 返回更新后的数据
+	fsm, _ = ctrl.repo.FindBySiteID(uint(siteID))
+	c.JSON(http.StatusOK, fsm)
 }
