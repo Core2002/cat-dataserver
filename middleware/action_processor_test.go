@@ -70,7 +70,7 @@ func TestProcessAction_TakeTemperature(t *testing.T) {
 	fsm, err := processor.ProcessAction(action)
 	assert.NoError(t, err)
 	assert.NotNil(t, fsm)
-	assert.Equal(t, 38.5, float64(fsm.TemperatureC))
+	assert.InDelta(t, 38.5, float64(fsm.TemperatureC), 0.01)
 }
 
 func TestProcessAction_TrimNails(t *testing.T) {
@@ -206,7 +206,7 @@ func TestUpdateTemperature(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, fsm)
-				assert.Equal(t, tt.expectedTemp, float64(fsm.TemperatureC))
+				assert.InDelta(t, tt.expectedTemp, float64(fsm.TemperatureC), 0.01)
 			}
 		})
 	}
@@ -266,4 +266,285 @@ func TestUpdateTrimNailsTime(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, fsm)
 	assert.WithinDuration(t, now, fsm.TrimNailsTime, time.Second)
+}
+
+func TestProcessAction_HealthCheck(t *testing.T) {
+	setupTestDB(t)
+
+	catRepo := repository.NewCatRepository()
+	siteRepo := repository.NewSiteRepository()
+	actionRepo := repository.NewCatActionRepository()
+	fsmRepo := repository.NewCatFSMRepository()
+
+	// 创建测试用的 Site 记录
+	testSite := &model.Site{
+		SiteName:             "测试站点HealthCheck",
+		SiteAddress:          "测试地址HealthCheck",
+		SiteAdminPhoneNumber: "13800138000",
+	}
+	err := siteRepo.Create(testSite)
+	assert.NoError(t, err)
+
+	// 创建测试用的 Cat 记录
+	testCat := &model.Cat{
+		CatID:             30,
+		CatName:           "测试猫HealthCheck",
+		CatPhotoUri:       "http://example.com/photo30.jpg",
+		CatType:           "英国短毛猫",
+		CatGender:         "公",
+		MasterName:        "测试主人HealthCheck",
+		MasterPhoneNumber: "13800138000",
+	}
+	err = catRepo.Create(testCat)
+	assert.NoError(t, err)
+
+	// 创建测试用的 FSM 记录
+	testFSM := &model.CatFSM{
+		CatID:         30,
+		SiteID:        testSite.SiteID,
+		TemperatureC:  38.5,
+		WeightKG:      4.2,
+		TrimNailsTime: time.Now(),
+	}
+	err = fsmRepo.Create(testFSM)
+	assert.NoError(t, err)
+
+	processor := NewActionProcessor(actionRepo, fsmRepo)
+
+	action := &model.CatAction{
+		ActionType:   model.CatActionHealthCheck,
+		CatID:        30,
+		SiteID:       testSite.SiteID,
+		ActionDetail: `{"temperature": 39.0, "weight": 4.8, "notes": "体检正常"}`,
+	}
+
+	fsm, err := processor.ProcessAction(action)
+	assert.NoError(t, err)
+	assert.NotNil(t, fsm)
+	assert.InDelta(t, 39.0, float64(fsm.TemperatureC), 0.01)
+	assert.InDelta(t, 4.8, float64(fsm.WeightKG), 0.01)
+}
+
+func TestProcessAction_Deworm(t *testing.T) {
+	setupTestDB(t)
+
+	catRepo := repository.NewCatRepository()
+	siteRepo := repository.NewSiteRepository()
+	actionRepo := repository.NewCatActionRepository()
+	fsmRepo := repository.NewCatFSMRepository()
+
+	// 创建测试用的 Site 记录
+	testSite := &model.Site{
+		SiteName:             "测试站点Deworm",
+		SiteAddress:          "测试地址Deworm",
+		SiteAdminPhoneNumber: "13800138000",
+	}
+	err := siteRepo.Create(testSite)
+	assert.NoError(t, err)
+
+	// 创建测试用的 Cat 记录
+	testCat := &model.Cat{
+		CatID:             31,
+		CatName:           "测试猫Deworm",
+		CatPhotoUri:       "http://example.com/photo31.jpg",
+		CatType:           "英国短毛猫",
+		CatGender:         "公",
+		MasterName:        "测试主人Deworm",
+		MasterPhoneNumber: "13800138000",
+	}
+	err = catRepo.Create(testCat)
+	assert.NoError(t, err)
+
+	// 创建测试用的 FSM 记录
+	testFSM := &model.CatFSM{
+		CatID:         31,
+		SiteID:        testSite.SiteID,
+		TemperatureC:  38.5,
+		WeightKG:      4.2,
+		TrimNailsTime: time.Now(),
+	}
+	err = fsmRepo.Create(testFSM)
+	assert.NoError(t, err)
+
+	processor := NewActionProcessor(actionRepo, fsmRepo)
+
+	action := &model.CatAction{
+		ActionType:   model.CatActionDeworm,
+		CatID:        31,
+		SiteID:       testSite.SiteID,
+		ActionDetail: `{"drug_name": "福来恩", "dosage": "1ml"}`,
+	}
+
+	fsm, err := processor.ProcessAction(action)
+	assert.NoError(t, err)
+	assert.NotNil(t, fsm)
+	// 驱虫动作不更新 FSM
+}
+
+func TestProcessAction_Vaccinate(t *testing.T) {
+	setupTestDB(t)
+
+	catRepo := repository.NewCatRepository()
+	siteRepo := repository.NewSiteRepository()
+	actionRepo := repository.NewCatActionRepository()
+	fsmRepo := repository.NewCatFSMRepository()
+
+	// 创建测试用的 Site 记录
+	testSite := &model.Site{
+		SiteName:             "测试站点Vaccinate",
+		SiteAddress:          "测试地址Vaccinate",
+		SiteAdminPhoneNumber: "13800138000",
+	}
+	err := siteRepo.Create(testSite)
+	assert.NoError(t, err)
+
+	// 创建测试用的 Cat 记录
+	testCat := &model.Cat{
+		CatID:             32,
+		CatName:           "测试猫Vaccinate",
+		CatPhotoUri:       "http://example.com/photo32.jpg",
+		CatType:           "英国短毛猫",
+		CatGender:         "公",
+		MasterName:        "测试主人Vaccinate",
+		MasterPhoneNumber: "13800138000",
+	}
+	err = catRepo.Create(testCat)
+	assert.NoError(t, err)
+
+	// 创建测试用的 FSM 记录
+	testFSM := &model.CatFSM{
+		CatID:         32,
+		SiteID:        testSite.SiteID,
+		TemperatureC:  38.5,
+		WeightKG:      4.2,
+		TrimNailsTime: time.Now(),
+	}
+	err = fsmRepo.Create(testFSM)
+	assert.NoError(t, err)
+
+	processor := NewActionProcessor(actionRepo, fsmRepo)
+
+	action := &model.CatAction{
+		ActionType:   model.CatActionVaccinate,
+		CatID:        32,
+		SiteID:       testSite.SiteID,
+		ActionDetail: `{"vaccine_name": "猫三联", "batch_no": "B2024001"}`,
+	}
+
+	fsm, err := processor.ProcessAction(action)
+	assert.NoError(t, err)
+	assert.NotNil(t, fsm)
+	// 疫苗动作不更新 FSM
+}
+
+func TestProcessAction_Sterilize(t *testing.T) {
+	setupTestDB(t)
+
+	catRepo := repository.NewCatRepository()
+	siteRepo := repository.NewSiteRepository()
+	actionRepo := repository.NewCatActionRepository()
+	fsmRepo := repository.NewCatFSMRepository()
+
+	// 创建测试用的 Site 记录
+	testSite := &model.Site{
+		SiteName:             "测试站点Sterilize",
+		SiteAddress:          "测试地址Sterilize",
+		SiteAdminPhoneNumber: "13800138000",
+	}
+	err := siteRepo.Create(testSite)
+	assert.NoError(t, err)
+
+	// 创建测试用的 Cat 记录
+	testCat := &model.Cat{
+		CatID:             33,
+		CatName:           "测试猫Sterilize",
+		CatPhotoUri:       "http://example.com/photo33.jpg",
+		CatType:           "英国短毛猫",
+		CatGender:         "公",
+		MasterName:        "测试主人Sterilize",
+		MasterPhoneNumber: "13800138000",
+	}
+	err = catRepo.Create(testCat)
+	assert.NoError(t, err)
+
+	// 创建测试用的 FSM 记录
+	testFSM := &model.CatFSM{
+		CatID:         33,
+		SiteID:        testSite.SiteID,
+		TemperatureC:  38.5,
+		WeightKG:      4.2,
+		TrimNailsTime: time.Now(),
+	}
+	err = fsmRepo.Create(testFSM)
+	assert.NoError(t, err)
+
+	processor := NewActionProcessor(actionRepo, fsmRepo)
+
+	action := &model.CatAction{
+		ActionType:   model.CatActionSterilize,
+		CatID:        33,
+		SiteID:       testSite.SiteID,
+		ActionDetail: `{"notes": "手术顺利"}`,
+	}
+
+	fsm, err := processor.ProcessAction(action)
+	assert.NoError(t, err)
+	assert.NotNil(t, fsm)
+	// 绝育动作不更新 FSM
+}
+
+func TestProcessAction_Bathing(t *testing.T) {
+	setupTestDB(t)
+
+	catRepo := repository.NewCatRepository()
+	siteRepo := repository.NewSiteRepository()
+	actionRepo := repository.NewCatActionRepository()
+	fsmRepo := repository.NewCatFSMRepository()
+
+	// 创建测试用的 Site 记录
+	testSite := &model.Site{
+		SiteName:             "测试站点Bathing",
+		SiteAddress:          "测试地址Bathing",
+		SiteAdminPhoneNumber: "13800138000",
+	}
+	err := siteRepo.Create(testSite)
+	assert.NoError(t, err)
+
+	// 创建测试用的 Cat 记录
+	testCat := &model.Cat{
+		CatID:             34,
+		CatName:           "测试猫Bathing",
+		CatPhotoUri:       "http://example.com/photo34.jpg",
+		CatType:           "英国短毛猫",
+		CatGender:         "公",
+		MasterName:        "测试主人Bathing",
+		MasterPhoneNumber: "13800138000",
+	}
+	err = catRepo.Create(testCat)
+	assert.NoError(t, err)
+
+	// 创建测试用的 FSM 记录
+	testFSM := &model.CatFSM{
+		CatID:         34,
+		SiteID:        testSite.SiteID,
+		TemperatureC:  38.5,
+		WeightKG:      4.2,
+		TrimNailsTime: time.Now(),
+	}
+	err = fsmRepo.Create(testFSM)
+	assert.NoError(t, err)
+
+	processor := NewActionProcessor(actionRepo, fsmRepo)
+
+	action := &model.CatAction{
+		ActionType:   model.CatActionBathing,
+		CatID:        34,
+		SiteID:       testSite.SiteID,
+		ActionDetail: `{"notes": "洗澡完成"}`,
+	}
+
+	fsm, err := processor.ProcessAction(action)
+	assert.NoError(t, err)
+	assert.NotNil(t, fsm)
+	// 洗澡动作不更新 FSM
 }

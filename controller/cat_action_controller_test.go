@@ -76,7 +76,7 @@ func TestCreateCatAction(t *testing.T) {
 		SiteID:       1,
 		UserID:       1,
 		ActionType:   model.CatActionBathing,
-		ActionDetail: "洗澡测试",
+		ActionDetail: `{"notes": "洗澡测试"}`,
 	}
 
 	body, _ := json.Marshal(newAction)
@@ -153,7 +153,7 @@ func TestGetCatAction(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request = req
-	c.Params = []gin.Param{{Key: "cat_id", Value: "1"}}
+	c.Params = []gin.Param{{Key: "action_id", Value: "1"}}
 
 	ctrl.GetCatAction(c)
 
@@ -285,7 +285,7 @@ func TestCreateCatActionWithInvalidCatID(t *testing.T) {
 		SiteID:       1,
 		UserID:       1,
 		ActionType:   model.CatActionBathing,
-		ActionDetail: "测试无效的 CatID",
+		ActionDetail: `{"notes": "测试无效的 CatID"}`,
 	}
 
 	body, _ := json.Marshal(newAction)
@@ -328,7 +328,7 @@ func TestCreateCatActionWithInvalidSiteID(t *testing.T) {
 		SiteID:       999, // 不存在的 SiteID
 		UserID:       1,
 		ActionType:   model.CatActionBathing,
-		ActionDetail: "测试无效的 SiteID",
+		ActionDetail: `{"notes": "测试无效的 SiteID"}`,
 	}
 
 	body, _ := json.Marshal(newAction)
@@ -359,5 +359,137 @@ func TestCreateCatActionWithInvalidSiteID(t *testing.T) {
 
 	if errors[0] != "SiteID does not exist" {
 		t.Errorf("Expected error message 'SiteID does not exist', got '%s'", errors[0])
+	}
+}
+
+// 测试创建体检动作
+func TestCreateHealthCheckAction(t *testing.T) {
+	ctrl := setupCatActionController()
+
+	newAction := model.CatAction{
+		CatID:      1,
+		SiteID:     1,
+		UserID:     1,
+		ActionType: model.CatActionHealthCheck,
+		ActionDetail: `{"temperature": 38.5, "weight": 4.5, "notes": "体检正常"}`,
+	}
+
+	body, _ := json.Marshal(newAction)
+	req, _ := http.NewRequest("POST", "/cat-actions", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-User-ID", "1")
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = req
+
+	ctrl.CreateCatAction(c)
+
+	if w.Code != http.StatusCreated {
+		t.Errorf("Expected status code %d, got %d", http.StatusCreated, w.Code)
+	}
+
+	var responseData map[string]interface{}
+	err := json.Unmarshal(w.Body.Bytes(), &responseData)
+	if err != nil {
+		t.Fatalf("Failed to parse response: %v", err)
+	}
+
+	// 检查返回的 FSM 是否更新了体温和体重
+	if fsm, ok := responseData["fsm"].(map[string]interface{}); ok {
+		if temp, ok := fsm["temperature_c"].(float64); ok {
+			if temp != 38.5 {
+				t.Errorf("Expected temperature 38.5, got %f", temp)
+			}
+		}
+		if weight, ok := fsm["weight_kg"].(float64); ok {
+			if weight != 4.5 {
+				t.Errorf("Expected weight 4.5, got %f", weight)
+			}
+		}
+	}
+}
+
+// 测试创建驱虫动作
+func TestCreateDewormAction(t *testing.T) {
+	ctrl := setupCatActionController()
+
+	newAction := model.CatAction{
+		CatID:      1,
+		SiteID:     1,
+		UserID:     1,
+		ActionType: model.CatActionDeworm,
+		ActionDetail: `{"drug_name": "福来恩", "dosage": "1ml"}`,
+	}
+
+	body, _ := json.Marshal(newAction)
+	req, _ := http.NewRequest("POST", "/cat-actions", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-User-ID", "1")
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = req
+
+	ctrl.CreateCatAction(c)
+
+	if w.Code != http.StatusCreated {
+		t.Errorf("Expected status code %d, got %d", http.StatusCreated, w.Code)
+	}
+}
+
+// 测试创建疫苗动作
+func TestCreateVaccinateAction(t *testing.T) {
+	ctrl := setupCatActionController()
+
+	newAction := model.CatAction{
+		CatID:      1,
+		SiteID:     1,
+		UserID:     1,
+		ActionType: model.CatActionVaccinate,
+		ActionDetail: `{"vaccine_name": "猫三联", "batch_no": "B2024001"}`,
+	}
+
+	body, _ := json.Marshal(newAction)
+	req, _ := http.NewRequest("POST", "/cat-actions", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-User-ID", "1")
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = req
+
+	ctrl.CreateCatAction(c)
+
+	if w.Code != http.StatusCreated {
+		t.Errorf("Expected status code %d, got %d", http.StatusCreated, w.Code)
+	}
+}
+
+// 测试创建绝育动作
+func TestCreateSterilizeAction(t *testing.T) {
+	ctrl := setupCatActionController()
+
+	newAction := model.CatAction{
+		CatID:      1,
+		SiteID:     1,
+		UserID:     1,
+		ActionType: model.CatActionSterilize,
+		ActionDetail: `{"notes": "手术顺利"}`,
+	}
+
+	body, _ := json.Marshal(newAction)
+	req, _ := http.NewRequest("POST", "/cat-actions", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-User-ID", "1")
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = req
+
+	ctrl.CreateCatAction(c)
+
+	if w.Code != http.StatusCreated {
+		t.Errorf("Expected status code %d, got %d", http.StatusCreated, w.Code)
 	}
 }

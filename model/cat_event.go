@@ -60,9 +60,38 @@ type TemperatureActionDetail struct {
 	Temperature float32 `json:"temperature" binding:"required,gte=0,lte=50"` // 体温，单位：摄氏度
 }
 
-// WeightActionDetail 测体重动作的详细信息
-type WeightActionDetail struct {
-	Weight float32 `json:"weight" binding:"required,gte=0.1,lte=25"` // 体重，单位：千克
+// SterilizeActionDetail 绝育动作的详细信息
+type SterilizeActionDetail struct {
+	Notes string `json:"notes" binding:"required"` // 备注
+}
+
+// HealthCheckActionDetail 体检动作的详细信息
+type HealthCheckActionDetail struct {
+	Temperature float32 `json:"temperature" binding:"required,gte=0,lte=50"` // 体温，单位：摄氏度
+	Weight      float32 `json:"weight" binding:"required,gte=0.1,lte=25"`   // 体重，单位：千克
+	Notes       string  `json:"notes" binding:"required"`                    // 备注
+}
+
+// DewormActionDetail 驱虫动作的详细信息
+type DewormActionDetail struct {
+	DrugName string `json:"drug_name" binding:"required"` // 药物名称
+	Dosage   string `json:"dosage" binding:"required"`    // 剂量
+}
+
+// TrimNailsActionDetail 修剪指甲动作的详细信息
+type TrimNailsActionDetail struct {
+	Notes string `json:"notes" binding:"required"` // 备注
+}
+
+// BathingActionDetail 洗澡动作的详细信息
+type BathingActionDetail struct {
+	Notes string `json:"notes" binding:"required"` // 备注
+}
+
+// VaccinateActionDetail 疫苗动作的详细信息
+type VaccinateActionDetail struct {
+	VaccineName string `json:"vaccine_name" binding:"required"` // 疫苗名称
+	BatchNo     string `json:"batch_no" binding:"required"`     // 批号
 }
 
 // ParseTemperatureActionDetail 解析测体温动作的详细信息
@@ -74,11 +103,56 @@ func ParseTemperatureActionDetail(detail string) (*TemperatureActionDetail, erro
 	return &actionDetail, nil
 }
 
-// ParseWeightActionDetail 解析测体重动作的详细信息
-func ParseWeightActionDetail(detail string) (*WeightActionDetail, error) {
-	var actionDetail WeightActionDetail
+// ParseSterilizeActionDetail 解析绝育动作的详细信息
+func ParseSterilizeActionDetail(detail string) (*SterilizeActionDetail, error) {
+	var actionDetail SterilizeActionDetail
 	if err := json.Unmarshal([]byte(detail), &actionDetail); err != nil {
-		return nil, fmt.Errorf("解析测体重信息失败: %v", err)
+		return nil, fmt.Errorf("解析绝育信息失败: %v", err)
+	}
+	return &actionDetail, nil
+}
+
+// ParseHealthCheckActionDetail 解析体检动作的详细信息
+func ParseHealthCheckActionDetail(detail string) (*HealthCheckActionDetail, error) {
+	var actionDetail HealthCheckActionDetail
+	if err := json.Unmarshal([]byte(detail), &actionDetail); err != nil {
+		return nil, fmt.Errorf("解析体检信息失败: %v", err)
+	}
+	return &actionDetail, nil
+}
+
+// ParseDewormActionDetail 解析驱虫动作的详细信息
+func ParseDewormActionDetail(detail string) (*DewormActionDetail, error) {
+	var actionDetail DewormActionDetail
+	if err := json.Unmarshal([]byte(detail), &actionDetail); err != nil {
+		return nil, fmt.Errorf("解析驱虫信息失败: %v", err)
+	}
+	return &actionDetail, nil
+}
+
+// ParseTrimNailsActionDetail 解析修剪指甲动作的详细信息
+func ParseTrimNailsActionDetail(detail string) (*TrimNailsActionDetail, error) {
+	var actionDetail TrimNailsActionDetail
+	if err := json.Unmarshal([]byte(detail), &actionDetail); err != nil {
+		return nil, fmt.Errorf("解析修剪指甲信息失败: %v", err)
+	}
+	return &actionDetail, nil
+}
+
+// ParseBathingActionDetail 解析洗澡动作的详细信息
+func ParseBathingActionDetail(detail string) (*BathingActionDetail, error) {
+	var actionDetail BathingActionDetail
+	if err := json.Unmarshal([]byte(detail), &actionDetail); err != nil {
+		return nil, fmt.Errorf("解析洗澡信息失败: %v", err)
+	}
+	return &actionDetail, nil
+}
+
+// ParseVaccinateActionDetail 解析疫苗动作的详细信息
+func ParseVaccinateActionDetail(detail string) (*VaccinateActionDetail, error) {
+	var actionDetail VaccinateActionDetail
+	if err := json.Unmarshal([]byte(detail), &actionDetail); err != nil {
+		return nil, fmt.Errorf("解析疫苗信息失败: %v", err)
 	}
 	return &actionDetail, nil
 }

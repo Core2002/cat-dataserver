@@ -80,14 +80,28 @@ func TestCreateCatEvent(t *testing.T) {
 		t.Errorf("Expected status code %d, got %d, response: %s", http.StatusCreated, w.Code, w.Body.String())
 	}
 
-	var response model.CatEvent
-	err := json.Unmarshal(w.Body.Bytes(), &response)
+	var responseData map[string]interface{}
+	err := json.Unmarshal(w.Body.Bytes(), &responseData)
 	if err != nil {
 		t.Fatalf("Failed to parse response: %v", err)
 	}
 
-	if response.EventType != model.CatSick {
-		t.Errorf("Expected event type '%s', got '%s'", model.CatSick, response.EventType)
+	// 检查 event 字段
+	eventData, ok := responseData["event"].(map[string]interface{})
+	if !ok {
+		t.Fatalf("Response should contain 'event' field")
+	}
+
+	// 验证事件类型（将 float64 或 string 转换）
+	var eventType string
+	if eventTypeFloat, ok := eventData["event_type"].(float64); ok {
+		eventType = string(rune(int(eventTypeFloat)))
+	} else if eventTypeStr, ok := eventData["event_type"].(string); ok {
+		eventType = eventTypeStr
+	}
+
+	if eventType != string(model.CatSick) {
+		t.Errorf("Expected event type '%s', got '%s'", model.CatSick, eventType)
 	}
 }
 
@@ -123,7 +137,7 @@ func TestGetCatEvent(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request = req
-	c.Params = []gin.Param{{Key: "cat_id", Value: "1"}}
+	c.Params = []gin.Param{{Key: "event_id", Value: "1"}}
 
 	ctrl.GetCatEvent(c)
 

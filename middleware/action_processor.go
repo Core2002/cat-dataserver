@@ -85,17 +85,22 @@ func (p *ActionProcessor) updateTemperature(action *model.CatAction, fsm *model.
 	return fsm, nil
 }
 
-// updateWeight 更新体重
+// updateWeight 更新体重（从体检动作中提取）
 func (p *ActionProcessor) updateWeight(action *model.CatAction, fsm *model.CatFSM) (*model.CatFSM, error) {
-	detail, err := model.ParseWeightActionDetail(action.ActionDetail)
+	detail, err := model.ParseHealthCheckActionDetail(action.ActionDetail)
 	if err != nil {
-		return nil, fmt.Errorf("解析测体重信息失败: %v", err)
+		return nil, fmt.Errorf("解析体检信息失败: %v", err)
+	}
+
+	if err := p.fsmRepo.UpdateTemperature(action.CatID, detail.Temperature); err != nil {
+		return nil, fmt.Errorf("更新体温失败: %v", err)
 	}
 
 	if err := p.fsmRepo.UpdateWeight(action.CatID, detail.Weight); err != nil {
 		return nil, fmt.Errorf("更新体重失败: %v", err)
 	}
 
+	fsm.TemperatureC = detail.Temperature
 	fsm.WeightKG = detail.Weight
 	return fsm, nil
 }

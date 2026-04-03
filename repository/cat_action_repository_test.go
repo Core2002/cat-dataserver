@@ -16,7 +16,7 @@ func TestCatActionRepositoryCreate(t *testing.T) {
 		SiteID:       1,
 		UserID:       1,
 		ActionType:   model.CatActionBathing,
-		ActionDetail: "洗澡测试",
+		ActionDetail: `{"notes": "洗澡测试"}`,
 	}
 
 	err := repo.Create(action)
@@ -39,7 +39,7 @@ func TestCatActionRepositoryFindByID(t *testing.T) {
 		SiteID:       1,
 		UserID:       1,
 		ActionType:   model.CatActionBathing,
-		ActionDetail: "洗澡测试",
+		ActionDetail: `{"notes": "洗澡测试"}`,
 	}
 	repo.Create(action)
 
@@ -63,7 +63,7 @@ func TestCatActionRepositoryFindByCatID(t *testing.T) {
 		SiteID:       1,
 		UserID:       1,
 		ActionType:   model.CatActionTakeTemperature,
-		ActionDetail: "测体温测试",
+		ActionDetail: `{"temperature": 38.5}`,
 	}
 	repo.Create(action)
 
@@ -91,7 +91,7 @@ func TestCatActionRepositoryFindBySiteID(t *testing.T) {
 		SiteID:       1,
 		UserID:       1,
 		ActionType:   model.CatActionVaccinate,
-		ActionDetail: "疫苗测试",
+		ActionDetail: `{"vaccine_name": "猫三联", "batch_no": "B2024001"}`,
 	}
 	repo.Create(action)
 
@@ -119,7 +119,7 @@ func TestCatActionRepositoryFindByUserID(t *testing.T) {
 		SiteID:       1,
 		UserID:       1,
 		ActionType:   model.CatActionDeworm,
-		ActionDetail: "驱虫测试",
+		ActionDetail: `{"drug_name": "福来恩", "dosage": "1ml"}`,
 	}
 	repo.Create(action)
 
@@ -147,19 +147,19 @@ func TestCatActionRepositoryUpdate(t *testing.T) {
 		SiteID:       1,
 		UserID:       1,
 		ActionType:   model.CatActionSterilize,
-		ActionDetail: "绝育测试",
+		ActionDetail: `{"notes": "绝育测试"}`,
 	}
 	repo.Create(action)
 
-	action.ActionDetail = "更新的操作详情"
+	action.ActionDetail = `{"notes": "更新的操作详情"}`
 
 	err := repo.Update(action)
 	if err != nil {
 		t.Errorf("Failed to update action: %v", err)
 	}
 
-	if action.ActionDetail != "更新的操作详情" {
-		t.Errorf("Expected detail '更新的操作详情', got '%s'", action.ActionDetail)
+	if action.ActionDetail != `{"notes": "更新的操作详情"}` {
+		t.Errorf("Expected detail '{\"notes\": \"更新的操作详情\"}', got '%s'", action.ActionDetail)
 	}
 }
 
@@ -173,7 +173,7 @@ func TestCatActionRepositoryDelete(t *testing.T) {
 		SiteID:       1,
 		UserID:       1,
 		ActionType:   model.CatActionVaccinate,
-		ActionDetail: "疫苗测试",
+		ActionDetail: `{"vaccine_name": "猫三联", "batch_no": "B2024001"}`,
 	}
 	repo.Create(action)
 
@@ -199,7 +199,7 @@ func TestCatActionRepositoryFindPage(t *testing.T) {
 			SiteID:       1,
 			UserID:       1,
 			ActionType:   model.CatActionSterilize,
-			ActionDetail: "绝育测试",
+			ActionDetail: `{"notes": "绝育测试"}`,
 		}
 		repo.Create(action)
 	}
