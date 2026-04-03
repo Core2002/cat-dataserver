@@ -172,7 +172,7 @@ func (ctrl *CatFSMController) UpdateWeight(c *gin.Context) {
 		return
 	}
 	type WeightUpdate struct {
-		Weight float32 `json:"weight"`
+		Weight float32 `json:"weight_kg"`
 	}
 	var update WeightUpdate
 	if err := c.ShouldBindJSON(&update); err != nil {
