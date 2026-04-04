@@ -29,7 +29,7 @@ func setupSiteFSMController() *SiteFSMController {
 	siteRepo := repository.NewSiteRepository()
 	siteRepo.Create(testSite)
 
-	return NewSiteFSMController(repo)
+	return NewSiteFSMController(repo, siteRepo)
 }
 
 func TestCreateSiteFSM(t *testing.T) {
@@ -84,9 +84,9 @@ func TestUpdateDisinfectTime(t *testing.T) {
 	ctrl := setupSiteFSMController()
 
 	timeUpdate := struct {
-		Time string `json:"time"`
+		Time string `json:"last_disinfect_time"`
 	}{
-		Time: "2024-01-01 12:00:00",
+		Time: "2024-01-01T12:00:00Z",
 	}
 
 	body, _ := json.Marshal(timeUpdate)
@@ -109,9 +109,9 @@ func TestUpdateFeedTime(t *testing.T) {
 	ctrl := setupSiteFSMController()
 
 	timeUpdate := struct {
-		Time string `json:"time"`
+		Time string `json:"last_feed_time"`
 	}{
-		Time: "2024-01-01 12:00:00",
+		Time: "2024-01-01T12:00:00Z",
 	}
 
 	body, _ := json.Marshal(timeUpdate)
@@ -134,9 +134,9 @@ func TestUpdateGiveWaterTime(t *testing.T) {
 	ctrl := setupSiteFSMController()
 
 	timeUpdate := struct {
-		Time string `json:"time"`
+		Time string `json:"last_give_water_time"`
 	}{
-		Time: "2024-01-01 12:00:00",
+		Time: "2024-01-01T12:00:00Z",
 	}
 
 	body, _ := json.Marshal(timeUpdate)
@@ -159,9 +159,9 @@ func TestUpdatePlayTime(t *testing.T) {
 	ctrl := setupSiteFSMController()
 
 	timeUpdate := struct {
-		Time string `json:"time"`
+		Time string `json:"last_play_time"`
 	}{
-		Time: "2024-01-01 12:00:00",
+		Time: "2024-01-01T12:00:00Z",
 	}
 
 	body, _ := json.Marshal(timeUpdate)
@@ -182,12 +182,16 @@ func TestUpdatePlayTime(t *testing.T) {
 
 func TestNewSiteFSMController(t *testing.T) {
 	repo := repository.NewSiteFSMRepository()
-	ctrl := NewSiteFSMController(repo)
+	siteRepo := repository.NewSiteRepository()
+	ctrl := NewSiteFSMController(repo, siteRepo)
 
 	if ctrl == nil {
 		t.Error("Expected non-nil controller")
 	}
 	if ctrl.repo != repo {
 		t.Error("Controller repo does not match input repo")
+	}
+	if ctrl.siteRepo != siteRepo {
+		t.Error("Controller siteRepo does not match input siteRepo")
 	}
 }

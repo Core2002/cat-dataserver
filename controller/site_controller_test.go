@@ -18,7 +18,8 @@ func setupSiteController() *SiteController {
 	gin.SetMode(gin.TestMode)
 	database.InitDB(":memory:")
 	repo := repository.NewSiteRepository()
-	return NewSiteController(repo)
+	siteFSMRepo := repository.NewSiteFSMRepository()
+	return NewSiteController(repo, siteFSMRepo)
 }
 
 func TestCreateSite(t *testing.T) {
@@ -150,12 +151,16 @@ func TestDeleteSite(t *testing.T) {
 
 func TestNewSiteController(t *testing.T) {
 	repo := repository.NewSiteRepository()
-	ctrl := NewSiteController(repo)
+	siteFSMRepo := repository.NewSiteFSMRepository()
+	ctrl := NewSiteController(repo, siteFSMRepo)
 
 	if ctrl == nil {
 		t.Error("Expected non-nil controller")
 	}
 	if ctrl.repo != repo {
 		t.Error("Controller repo does not match input repo")
+	}
+	if ctrl.siteFSMRepo != siteFSMRepo {
+		t.Error("Controller siteFSMRepo does not match input siteFSMRepo")
 	}
 }

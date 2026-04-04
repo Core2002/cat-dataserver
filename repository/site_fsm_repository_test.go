@@ -145,7 +145,7 @@ func TestSiteFSMRepositoryUpdateDisinfectTime(t *testing.T) {
 	}
 	repo.Create(fsm)
 
-	newTime := "2024-01-01 12:00:00"
+	newTime := "2024-01-01T12:00:00Z"
 	err := repo.UpdateDisinfectTime(1, newTime)
 	if err != nil {
 		t.Errorf("Failed to update disinfect time: %v", err)
@@ -171,7 +171,7 @@ func TestSiteFSMRepositoryUpdateFeedTime(t *testing.T) {
 	}
 	repo.Create(fsm)
 
-	newTime := "2024-01-01 12:00:00"
+	newTime := "2024-01-01T12:00:00Z"
 	err := repo.UpdateFeedTime(1, newTime)
 	if err != nil {
 		t.Errorf("Failed to update feed time: %v", err)
@@ -197,7 +197,7 @@ func TestSiteFSMRepositoryUpdateGiveWaterTime(t *testing.T) {
 	}
 	repo.Create(fsm)
 
-	newTime := "2024-01-01 12:00:00"
+	newTime := "2024-01-01T12:00:00Z"
 	err := repo.UpdateGiveWaterTime(1, newTime)
 	if err != nil {
 		t.Errorf("Failed to update give water time: %v", err)
@@ -223,7 +223,7 @@ func TestSiteFSMRepositoryUpdatePlayTime(t *testing.T) {
 	}
 	repo.Create(fsm)
 
-	newTime := "2024-01-01 12:00:00"
+	newTime := "2024-01-01T12:00:00Z"
 	err := repo.UpdatePlayTime(1, newTime)
 	if err != nil {
 		t.Errorf("Failed to update play time: %v", err)

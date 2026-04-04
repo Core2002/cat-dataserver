@@ -228,10 +228,10 @@ func TestSiteFSMRoutes(t *testing.T) {
 	}{
 		{"GET FSM by site ID", "GET", "/site-fsms/site/1", http.StatusNotFound}, // 数据库中无数据
 		{"POST create FSM", "POST", "/site-fsms", http.StatusBadRequest},
-		{"PATCH update disinfect time", "PATCH", "/site-fsms/1/disinfect-time", http.StatusBadRequest},
-		{"PATCH update feed time", "PATCH", "/site-fsms/1/feed-time", http.StatusBadRequest},
-		{"PATCH update give water time", "PATCH", "/site-fsms/1/give-water-time", http.StatusBadRequest},
-		{"PATCH update play time", "PATCH", "/site-fsms/1/play-time", http.StatusBadRequest},
+		{"PATCH update disinfect time", "PATCH", "/site-fsms/1/disinfect-time", http.StatusNotFound}, // site 不存在
+		{"PATCH update feed time", "PATCH", "/site-fsms/1/feed-time", http.StatusNotFound},           // site 不存在
+		{"PATCH update give water time", "PATCH", "/site-fsms/1/give-water-time", http.StatusNotFound}, // site 不存在
+		{"PATCH update play time", "PATCH", "/site-fsms/1/play-time", http.StatusNotFound},           // site 不存在
 	}
 
 	for _, tt := range tests {
