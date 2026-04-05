@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"fifu.fun/cat-dataserver/model"
 	"fifu.fun/cat-dataserver/repository"
@@ -10,14 +11,27 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CreateCatRequest 创建猫请求
+type CreateCatRequest struct {
+	CatName           string `json:"cat_name" binding:"required,min=1,max=100"`
+	CatPhotoUri       string `json:"cat_photo_uri" binding:"required,url"`
+	CatType           string `json:"cat_type" binding:"required,min=1,max=50"`
+	CatGender         string `json:"cat_gender" binding:"required"`
+	MasterName        string `json:"master_name" binding:"required,min=1,max=100"`
+	MasterPhoneNumber string `json:"master_phone_number" binding:"required"`
+	SiteID            uint   `json:"site_id" binding:"required,min=1"`
+}
+
 // CatController Cat 处理器
 type CatController struct {
-	repo *repository.CatRepository
+	repo      *repository.CatRepository
+	fsmRepo   *repository.CatFSMRepository
+	siteRepo  *repository.SiteRepository
 }
 
 // NewCatController 创建 CatController 实例
-func NewCatController(repo *repository.CatRepository) *CatController {
-	return &CatController{repo: repo}
+func NewCatController(repo *repository.CatRepository, fsmRepo *repository.CatFSMRepository, siteRepo *repository.SiteRepository) *CatController {
+	return &CatController{repo: repo, fsmRepo: fsmRepo, siteRepo: siteRepo}
 }
 
 // GetCatsPage 分页获取 Cat
@@ -59,16 +73,52 @@ func (ctrl *CatController) GetCat(c *gin.Context) {
 
 // CreateCat 创建 Cat
 func (ctrl *CatController) CreateCat(c *gin.Context) {
-	var cat model.Cat
-	if err := c.ShouldBindJSON(&cat); err != nil {
+	var req CreateCatRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	// 验证 SiteID 是否存在
+	_, err := ctrl.siteRepo.FindByID(req.SiteID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "SiteID does not exist"})
+		return
+	}
+
+	// 创建猫
+	cat := model.Cat{
+		CatName:           req.CatName,
+		CatPhotoUri:       req.CatPhotoUri,
+		CatType:           req.CatType,
+		CatGender:         req.CatGender,
+		MasterName:        req.MasterName,
+		MasterPhoneNumber: req.MasterPhoneNumber,
 	}
 	if err := ctrl.repo.Create(&cat); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, cat)
+
+	// 自动创建 CatFSM 记录
+	fsm := model.CatFSM{
+		CatID:         cat.CatID,
+		SiteID:        req.SiteID,
+		TemperatureC:  37.5, // 默认体温
+		WeightKG:      4.0,  // 默认体重
+		TrimNailsTime: time.Now(),
+	}
+	if err := ctrl.fsmRepo.Create(&fsm); err != nil {
+		// FSM 创建失败，回滚猫的创建
+		ctrl.repo.Delete(cat.CatID)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create CatFSM: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"cat": cat,
+		"fsm": fsm,
+	})
 }
 
 // UpdateCat 更新 Cat

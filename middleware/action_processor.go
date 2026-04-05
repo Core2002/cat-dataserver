@@ -53,7 +53,18 @@ func (p *ActionProcessor) updateFSM(action *model.CatAction) (*model.CatFSM, err
 	// 查找状态机记录
 	fsm, err := p.fsmRepo.FindByID(action.CatID)
 	if err != nil {
-		return nil, err
+		// 如果 FSM 不存在，自动创建默认值（兜底逻辑）
+		fsm = &model.CatFSM{
+			CatID:         action.CatID,
+			SiteID:        action.SiteID,
+			TemperatureC:  37.5,
+			WeightKG:      4.0,
+			TrimNailsTime: time.Now(),
+		}
+		if createErr := p.fsmRepo.Create(fsm); createErr != nil {
+			return nil, fmt.Errorf("创建 CatFSM 失败: %v", createErr)
+		}
+		log.Printf("自动创建 CatFSM: CatID=%d", action.CatID)
 	}
 
 	switch action.ActionType {

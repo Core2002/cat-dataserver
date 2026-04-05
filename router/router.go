@@ -35,13 +35,13 @@ func SetupRouter() *gin.Engine {
 	// 初始化 repository 和 controller
 	catRepo := repository.NewCatRepository()
 	siteRepo := repository.NewSiteRepository()
-	catController := controller.NewCatController(catRepo)
+	catFSMRepo := repository.NewCatFSMRepository()
+	catController := controller.NewCatController(catRepo, catFSMRepo, siteRepo)
 
 	catEventRepo := repository.NewCatEventRepository()
 	catEventController := controller.NewCatEventController(catEventRepo, catRepo, siteRepo)
 
 	catActionRepo := repository.NewCatActionRepository()
-	catFSMRepo := repository.NewCatFSMRepository()
 
 	// 初始化动作处理器
 	actionProcessor := middleware.NewActionProcessor(catActionRepo, catFSMRepo)
