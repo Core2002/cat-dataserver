@@ -19,7 +19,17 @@ type CreateCatRequest struct {
 	CatGender         string `json:"cat_gender" binding:"required"`
 	MasterName        string `json:"master_name" binding:"required,min=1,max=100"`
 	MasterPhoneNumber string `json:"master_phone_number" binding:"required"`
-	SiteID            uint   `json:"site_id" binding:"required,min=1"`
+	SiteID            uint   `json:"site_id" binding:"omitempty,min=1"`
+}
+
+// UpdateCatRequest 更新猫请求
+type UpdateCatRequest struct {
+	CatName           string `json:"cat_name" binding:"omitempty,min=1,max=100"`
+	CatPhotoUri       string `json:"cat_photo_uri" binding:"omitempty,url"`
+	CatType           string `json:"cat_type" binding:"omitempty,min=1,max=50"`
+	CatGender         string `json:"cat_gender" binding:"omitempty"`
+	MasterName        string `json:"master_name" binding:"omitempty,min=1,max=100"`
+	MasterPhoneNumber string `json:"master_phone_number" binding:"omitempty"`
 }
 
 // CatController Cat 处理器
@@ -79,11 +89,13 @@ func (ctrl *CatController) CreateCat(c *gin.Context) {
 		return
 	}
 
-	// 验证 SiteID 是否存在
-	_, err := ctrl.siteRepo.FindByID(req.SiteID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "SiteID does not exist"})
-		return
+	// 验证 SiteID 是否存在（仅当提供 SiteID 时）
+	if req.SiteID > 0 {
+		_, err := ctrl.siteRepo.FindByID(req.SiteID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "SiteID does not exist"})
+			return
+		}
 	}
 
 	// 创建猫
@@ -134,10 +146,18 @@ func (ctrl *CatController) UpdateCat(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Cat not found"})
 		return
 	}
-	var updates model.Cat
-	if err := c.ShouldBindJSON(&updates); err != nil {
+	var req UpdateCatRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+	updates := model.Cat{
+		CatName:           req.CatName,
+		CatPhotoUri:       req.CatPhotoUri,
+		CatType:           req.CatType,
+		CatGender:         req.CatGender,
+		MasterName:        req.MasterName,
+		MasterPhoneNumber: req.MasterPhoneNumber,
 	}
 	if err := ctrl.repo.Update(cat, &updates); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

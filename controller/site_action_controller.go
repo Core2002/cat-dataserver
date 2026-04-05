@@ -12,10 +12,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CreateSiteActionRequest 创建 SiteAction 请求
+type CreateSiteActionRequest struct {
+	SiteID       uint               `json:"site_id" binding:"required,min=1"`
+	ActionType   model.SiteActionType `json:"action_type" binding:"required,siteActionType"`
+	ActionDetail string             `json:"action_detail" binding:"required,min=1,max=1000"`
+}
+
 // SiteActionController SiteAction 处理器
 type SiteActionController struct {
-	repo               *repository.SiteActionRepository
-	siteRepo           *repository.SiteRepository
+	repo                *repository.SiteActionRepository
+	siteRepo            *repository.SiteRepository
 	siteActionProcessor *middleware.SiteActionProcessor
 }
 
@@ -99,8 +106,8 @@ func (ctrl *SiteActionController) GetSiteActionsByUserID(c *gin.Context) {
 
 // CreateSiteAction 创建 SiteAction
 func (ctrl *SiteActionController) CreateSiteAction(c *gin.Context) {
-	var action model.SiteAction
-	if err := c.ShouldBindJSON(&action); err != nil {
+	var req CreateSiteActionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -116,13 +123,19 @@ func (ctrl *SiteActionController) CreateSiteAction(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid X-User-ID header"})
 		return
 	}
-	action.UserID = uint(userID)
 
 	// 校验 SiteID 是否存在
-	_, err = ctrl.siteRepo.FindByID(action.SiteID)
+	_, err = ctrl.siteRepo.FindByID(req.SiteID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "SiteID does not exist"})
 		return
+	}
+
+	action := model.SiteAction{
+		SiteID:       req.SiteID,
+		UserID:       uint(userID),
+		ActionType:   req.ActionType,
+		ActionDetail: req.ActionDetail,
 	}
 
 	// 使用动作处理器处理动作，自动更新状态机

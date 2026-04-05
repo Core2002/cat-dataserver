@@ -12,6 +12,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CreateCatActionRequest 创建 CatAction 请求
+type CreateCatActionRequest struct {
+	CatID        uint              `json:"cat_id" binding:"required,min=1"`
+	SiteID       uint              `json:"site_id" binding:"required,min=1"`
+	ActionType   model.CatActionType `json:"action_type" binding:"required,catActionType"`
+	ActionDetail string            `json:"action_detail" binding:"required,min=1,max=1000"`
+}
+
 // CatActionController CatAction 处理器
 type CatActionController struct {
 	repo            *repository.CatActionRepository
@@ -117,8 +125,8 @@ func (ctrl *CatActionController) GetCatActionsByUserID(c *gin.Context) {
 
 // CreateCatAction 创建 CatAction
 func (ctrl *CatActionController) CreateCatAction(c *gin.Context) {
-	var action model.CatAction
-	if err := c.ShouldBindJSON(&action); err != nil {
+	var req CreateCatActionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -134,17 +142,16 @@ func (ctrl *CatActionController) CreateCatAction(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid X-User-ID header"})
 		return
 	}
-	action.UserID = uint(userID)
 
 	// 校验 CatID 和 SiteID 是否存在
 	var errors []string
 
-	_, err = ctrl.catRepo.FindByID(action.CatID)
+	_, err = ctrl.catRepo.FindByID(req.CatID)
 	if err != nil {
 		errors = append(errors, "CatID does not exist")
 	}
 
-	_, err = ctrl.siteRepo.FindByID(action.SiteID)
+	_, err = ctrl.siteRepo.FindByID(req.SiteID)
 	if err != nil {
 		errors = append(errors, "SiteID does not exist")
 	}
@@ -152,6 +159,14 @@ func (ctrl *CatActionController) CreateCatAction(c *gin.Context) {
 	if len(errors) > 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"errors": errors})
 		return
+	}
+
+	action := model.CatAction{
+		CatID:        req.CatID,
+		SiteID:       req.SiteID,
+		UserID:       uint(userID),
+		ActionType:   req.ActionType,
+		ActionDetail: req.ActionDetail,
 	}
 
 	// 使用动作处理器处理动作，自动更新状态机

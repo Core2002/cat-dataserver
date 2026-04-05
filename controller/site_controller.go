@@ -10,9 +10,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CreateSiteRequest 创建 Site 请求
+type CreateSiteRequest struct {
+	SiteName             string `json:"site_name" binding:"required,min=1,max=100"`
+	SiteAddress          string `json:"site_address" binding:"required,min=1,max=100"`
+	SiteAdminPhoneNumber string `json:"site_admin_phone_number" binding:"required"`
+}
+
+// UpdateSiteRequest 更新 Site 请求
+type UpdateSiteRequest struct {
+	SiteName             string `json:"site_name" binding:"omitempty,min=1,max=100"`
+	SiteAddress          string `json:"site_address" binding:"omitempty,min=1,max=100"`
+	SiteAdminPhoneNumber string `json:"site_admin_phone_number" binding:"omitempty"`
+}
+
 // SiteController Site 处理器
 type SiteController struct {
-	repo       *repository.SiteRepository
+	repo        *repository.SiteRepository
 	siteFSMRepo *repository.SiteFSMRepository
 }
 
@@ -60,10 +74,15 @@ func (ctrl *SiteController) GetSite(c *gin.Context) {
 
 // CreateSite 创建 Site
 func (ctrl *SiteController) CreateSite(c *gin.Context) {
-	var site model.Site
-	if err := c.ShouldBindJSON(&site); err != nil {
+	var req CreateSiteRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+	site := model.Site{
+		SiteName:             req.SiteName,
+		SiteAddress:          req.SiteAddress,
+		SiteAdminPhoneNumber: req.SiteAdminPhoneNumber,
 	}
 	if err := ctrl.repo.Create(&site); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -91,20 +110,20 @@ func (ctrl *SiteController) UpdateSite(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Site not found"})
 		return
 	}
-	var updates model.Site
-	if err := c.ShouldBindJSON(&updates); err != nil {
+	var req UpdateSiteRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	// 更新字段
-	if updates.SiteName != "" {
-		site.SiteName = updates.SiteName
+	if req.SiteName != "" {
+		site.SiteName = req.SiteName
 	}
-	if updates.SiteAddress != "" {
-		site.SiteAddress = updates.SiteAddress
+	if req.SiteAddress != "" {
+		site.SiteAddress = req.SiteAddress
 	}
-	if updates.SiteAdminPhoneNumber != "" {
-		site.SiteAdminPhoneNumber = updates.SiteAdminPhoneNumber
+	if req.SiteAdminPhoneNumber != "" {
+		site.SiteAdminPhoneNumber = req.SiteAdminPhoneNumber
 	}
 	if err := ctrl.repo.Update(site); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

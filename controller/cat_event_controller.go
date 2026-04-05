@@ -10,6 +10,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CreateCatEventRequest 创建 CatEvent 请求
+type CreateCatEventRequest struct {
+	EventType model.CatEventType `json:"event_type" binding:"required,catEventType"`
+	SiteID    uint               `json:"site_id" binding:"required,min=1"`
+	CatID     uint               `json:"cat_id" binding:"required,min=1"`
+	Detail    string             `json:"detail" binding:"required,min=1,max=1000"`
+}
+
+// UpdateCatEventRequest 更新 CatEvent 请求
+type UpdateCatEventRequest struct {
+	EventType model.CatEventType `json:"event_type" binding:"omitempty,catEventType"`
+	SiteID    uint               `json:"site_id" binding:"omitempty,min=1"`
+	UserID    uint               `json:"user_id" binding:"omitempty,min=1"`
+	CatID     uint               `json:"cat_id" binding:"omitempty,min=1"`
+	Detail    string             `json:"detail" binding:"omitempty,min=1,max=1000"`
+}
+
 // CatEventController CatEvent 处理器
 type CatEventController struct {
 	repo     *repository.CatEventRepository
@@ -97,8 +114,8 @@ func (ctrl *CatEventController) GetCatEventsBySiteID(c *gin.Context) {
 
 // CreateCatEvent 创建 CatEvent
 func (ctrl *CatEventController) CreateCatEvent(c *gin.Context) {
-	var event model.CatEvent
-	if err := c.ShouldBindJSON(&event); err != nil {
+	var req CreateCatEventRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -114,17 +131,16 @@ func (ctrl *CatEventController) CreateCatEvent(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid X-User-ID header"})
 		return
 	}
-	event.UserID = uint(userID)
 
 	// 校验 CatID 和 SiteID 是否存在
 	var errors []string
 
-	_, err = ctrl.catRepo.FindByID(event.CatID)
+	_, err = ctrl.catRepo.FindByID(req.CatID)
 	if err != nil {
 		errors = append(errors, "CatID does not exist")
 	}
 
-	_, err = ctrl.siteRepo.FindByID(event.SiteID)
+	_, err = ctrl.siteRepo.FindByID(req.SiteID)
 	if err != nil {
 		errors = append(errors, "SiteID does not exist")
 	}
@@ -132,6 +148,14 @@ func (ctrl *CatEventController) CreateCatEvent(c *gin.Context) {
 	if len(errors) > 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"errors": errors})
 		return
+	}
+
+	event := model.CatEvent{
+		EventType: req.EventType,
+		SiteID:    req.SiteID,
+		UserID:    uint(userID),
+		CatID:     req.CatID,
+		Detail:    req.Detail,
 	}
 
 	if err := ctrl.repo.Create(&event); err != nil {
@@ -156,26 +180,26 @@ func (ctrl *CatEventController) UpdateCatEvent(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "CatEvent not found"})
 		return
 	}
-	var updates model.CatEvent
-	if err := c.ShouldBindJSON(&updates); err != nil {
+	var req UpdateCatEventRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	// 更新数据
-	if updates.EventType != "" {
-		event.EventType = updates.EventType
+	if req.EventType != "" {
+		event.EventType = req.EventType
 	}
-	if updates.SiteID != 0 {
-		event.SiteID = updates.SiteID
+	if req.SiteID != 0 {
+		event.SiteID = req.SiteID
 	}
-	if updates.UserID != 0 {
-		event.UserID = updates.UserID
+	if req.UserID != 0 {
+		event.UserID = req.UserID
 	}
-	if updates.CatID != 0 {
-		event.CatID = updates.CatID
+	if req.CatID != 0 {
+		event.CatID = req.CatID
 	}
-	if updates.Detail != "" {
-		event.Detail = updates.Detail
+	if req.Detail != "" {
+		event.Detail = req.Detail
 	}
 	if err := ctrl.repo.Update(event); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
