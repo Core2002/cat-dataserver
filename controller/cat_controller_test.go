@@ -18,7 +18,9 @@ func setupCatController() *CatController {
 	gin.SetMode(gin.TestMode)
 	database.InitDB(":memory:")
 	repo := repository.NewCatRepository()
-	return NewCatController(repo)
+	fsmRepo := repository.NewCatFSMRepository()
+	siteRepo := repository.NewSiteRepository()
+	return NewCatController(repo, fsmRepo, siteRepo)
 }
 
 func TestHealthCheck(t *testing.T) {
@@ -45,17 +47,25 @@ func TestHealthCheck(t *testing.T) {
 func TestCreateCat(t *testing.T) {
 	ctrl := setupCatController()
 
-	newCat := model.Cat{
-		CatID:             1,
-		CatName:           "测试猫",
-		CatPhotoUri:       "http://example.com/cat.jpg",
-		CatType:           "英国短毛猫",
-		CatGender:         "公",
-		MasterName:        "张三",
-		MasterPhoneNumber: "13800138000",
+	// 先创建一个站点
+	site := model.Site{
+		SiteName:    "测试站点",
+		SiteAddress: "测试地址",
+	}
+	ctrl.siteRepo.Create(&site)
+
+	// 使用 CreateCatRequest 的字段名
+	requestBody := map[string]interface{}{
+		"cat_name":            "测试猫",
+		"cat_photo_uri":       "http://example.com/cat.jpg",
+		"cat_type":            "英国短毛猫",
+		"cat_gender":          "公",
+		"master_name":         "张三",
+		"master_phone_number": "13800138000",
+		"site_id":             site.SiteID,
 	}
 
-	body, _ := json.Marshal(newCat)
+	body, _ := json.Marshal(requestBody)
 	req, _ := http.NewRequest("POST", "/cats", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 
@@ -66,17 +76,22 @@ func TestCreateCat(t *testing.T) {
 	ctrl.CreateCat(c)
 
 	if w.Code != http.StatusCreated {
-		t.Errorf("Expected status code %d, got %d", http.StatusCreated, w.Code)
+		t.Errorf("Expected status code %d, got %d, body: %s", http.StatusCreated, w.Code, w.Body.String())
 	}
 
-	var response model.Cat
+	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	if err != nil {
 		t.Fatalf("Failed to parse response: %v", err)
 	}
 
-	if response.CatName != "测试猫" {
-		t.Errorf("Expected cat name '测试猫', got '%s'", response.CatName)
+	cat, ok := response["cat"].(map[string]interface{})
+	if !ok {
+		t.Fatalf("Expected cat in response")
+	}
+
+	if cat["cat_name"] != "测试猫" {
+		t.Errorf("Expected cat name '测试猫', got '%s'", cat["cat_name"])
 	}
 }
 
@@ -174,13 +189,23 @@ func TestDeleteCat(t *testing.T) {
 }
 
 func TestNewCatController(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	database.InitDB(":memory:")
 	repo := repository.NewCatRepository()
-	ctrl := NewCatController(repo)
+	fsmRepo := repository.NewCatFSMRepository()
+	siteRepo := repository.NewSiteRepository()
+	ctrl := NewCatController(repo, fsmRepo, siteRepo)
 
 	if ctrl == nil {
 		t.Error("Expected non-nil controller")
 	}
 	if ctrl.repo != repo {
 		t.Error("Controller repo does not match input repo")
+	}
+	if ctrl.fsmRepo != fsmRepo {
+		t.Error("Controller fsmRepo does not match input fsmRepo")
+	}
+	if ctrl.siteRepo != siteRepo {
+		t.Error("Controller siteRepo does not match input siteRepo")
 	}
 }
