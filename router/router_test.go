@@ -58,9 +58,7 @@ func TestSetupRouter(t *testing.T) {
 		"POST:/cats",
 		"POST:/cat-events",
 		"POST:/cat-actions",
-		"POST:/cat-fsms",
 		"POST:/sites",
-		"POST:/site-fsms",
 	}
 
 	for _, expectedRoute := range expectedRoutes {
@@ -170,10 +168,6 @@ func TestCatFSMRoutes(t *testing.T) {
 	}{
 		{"GET FSMs page", "GET", "/cat-fsms/page", http.StatusBadRequest},
 		{"GET FSMs by site ID", "GET", "/cat-fsms/site/1", http.StatusOK},
-		{"POST create FSM", "POST", "/cat-fsms", http.StatusBadRequest},
-		{"PATCH update temperature", "PATCH", "/cat-fsms/1/temperature", http.StatusBadRequest},
-		{"PATCH update weight", "PATCH", "/cat-fsms/1/weight", http.StatusBadRequest},
-		{"PATCH update trim nails time", "PATCH", "/cat-fsms/1/trim-nails-time", http.StatusBadRequest},
 	}
 
 	for _, tt := range tests {
@@ -227,11 +221,6 @@ func TestSiteFSMRoutes(t *testing.T) {
 		expectedStatus int
 	}{
 		{"GET FSM by site ID", "GET", "/site-fsms/site/1", http.StatusNotFound}, // 数据库中无数据
-		{"POST create FSM", "POST", "/site-fsms", http.StatusBadRequest},
-		{"PATCH update disinfect time", "PATCH", "/site-fsms/1/disinfect-time", http.StatusNotFound}, // site 不存在
-		{"PATCH update feed time", "PATCH", "/site-fsms/1/feed-time", http.StatusNotFound},           // site 不存在
-		{"PATCH update give water time", "PATCH", "/site-fsms/1/give-water-time", http.StatusNotFound}, // site 不存在
-		{"PATCH update play time", "PATCH", "/site-fsms/1/play-time", http.StatusNotFound},           // site 不存在
 	}
 
 	for _, tt := range tests {

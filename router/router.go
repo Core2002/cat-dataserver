@@ -75,26 +75,18 @@ func SetupRouter() *gin.Engine {
 	r.PUT("/cat-events/:cat_id", catEventController.UpdateCatEvent)
 	r.DELETE("/cat-events/:cat_id", catEventController.DeleteCatEvent)
 
-	// CatAction CRUD 路由
+	// CatAction 路由（只读 + 创建，操作驱动状态机）
 	r.GET("/cat-actions/page", catActionController.GetCatActionsPage)
-	r.GET("/cat-actions/:cat_id", catActionController.GetCatAction)
+	r.GET("/cat-actions/:action_id", catActionController.GetCatAction)
 	r.GET("/cat-actions/cat/:cat_id", catActionController.GetCatActionsByCatID)
 	r.GET("/cat-actions/site/:site_id", catActionController.GetCatActionsBySiteID)
 	r.GET("/cat-actions/user/:user_id", catActionController.GetCatActionsByUserID)
 	r.POST("/cat-actions", catActionController.CreateCatAction)
-	r.PUT("/cat-actions/:cat_id", catActionController.UpdateCatAction)
-	r.DELETE("/cat-actions/:cat_id", catActionController.DeleteCatAction)
 
-	// CatFSM CRUD 路由
+	// CatFSM 路由（只读，由 Action 驱动更新）
 	r.GET("/cat-fsms/page", catFSMController.GetCatFSMsPage)
 	r.GET("/cat-fsms/:cat_id", catFSMController.GetCatFSM)
 	r.GET("/cat-fsms/site/:site_id", catFSMController.GetCatFSMsBySiteID)
-	r.POST("/cat-fsms", catFSMController.CreateCatFSM)
-	r.PUT("/cat-fsms/:cat_id", catFSMController.UpdateCatFSM)
-	r.DELETE("/cat-fsms/:cat_id", catFSMController.DeleteCatFSM)
-	r.PATCH("/cat-fsms/:cat_id/temperature", catFSMController.UpdateTemperature)
-	r.PATCH("/cat-fsms/:cat_id/weight", catFSMController.UpdateWeight)
-	r.PATCH("/cat-fsms/:cat_id/trim-nails-time", catFSMController.UpdateTrimNailsTime)
 
 	// Site CRUD 路由
 	r.GET("/sites/page", siteController.GetSitesPage)
@@ -103,27 +95,17 @@ func SetupRouter() *gin.Engine {
 	r.PUT("/sites/:site_id", siteController.UpdateSite)
 	r.DELETE("/sites/:site_id", siteController.DeleteSite)
 
-	// SiteFSM CRUD 路由
+	// SiteFSM 路由（只读，由 Action 驱动更新）
 	r.GET("/site-fsms/page", siteFSMController.GetSiteFSMsPage)
 	r.GET("/site-fsms/:site_id", siteFSMController.GetSiteFSM)
 	r.GET("/site-fsms/site/:site_id", siteFSMController.GetSiteFSMBySiteID)
-	r.POST("/site-fsms", siteFSMController.CreateSiteFSM)
-	r.PUT("/site-fsms/:site_id", siteFSMController.UpdateSiteFSM)
-	r.DELETE("/site-fsms/:site_id", siteFSMController.DeleteSiteFSM)
-	r.PATCH("/site-fsms/:site_id/disinfect-time", siteFSMController.UpdateDisinfectTime)
-	r.PATCH("/site-fsms/:site_id/feed-time", siteFSMController.UpdateFeedTime)
-	r.PATCH("/site-fsms/:site_id/give-water-time", siteFSMController.UpdateGiveWaterTime)
-	r.PATCH("/site-fsms/:site_id/play-time", siteFSMController.UpdatePlayTime)
-	r.PATCH("/site-fsms/:site_id/clean-litter-time", siteFSMController.UpdateCleanLitterTime)
 
-	// SiteAction CRUD 路由
+	// SiteAction 路由（只读 + 创建，操作驱动状态机）
 	r.GET("/site-actions/page", siteActionController.GetSiteActionsPage)
 	r.GET("/site-actions/:action_id", siteActionController.GetSiteAction)
 	r.GET("/site-actions/site/:site_id", siteActionController.GetSiteActionsBySiteID)
 	r.GET("/site-actions/user/:user_id", siteActionController.GetSiteActionsByUserID)
 	r.POST("/site-actions", siteActionController.CreateSiteAction)
-	r.PUT("/site-actions/:action_id", siteActionController.UpdateSiteAction)
-	r.DELETE("/site-actions/:action_id", siteActionController.DeleteSiteAction)
 
 	// 健康检查
 	r.GET("/health", controller.HealthCheck)

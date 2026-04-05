@@ -210,56 +210,6 @@ func TestGetCatActionsByUserID(t *testing.T) {
 	}
 }
 
-func TestUpdateCatAction(t *testing.T) {
-	ctrl := setupCatActionController()
-
-	updates := model.CatAction{
-		ActionDetail: "更新的操作详情",
-	}
-
-	body, _ := json.Marshal(updates)
-	req, _ := http.NewRequest("PUT", "/cat-actions/1", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-User-ID", "1")
-
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = req
-	c.Params = []gin.Param{{Key: "cat_id", Value: "1"}}
-
-	ctrl.UpdateCatAction(c)
-
-	if w.Code != http.StatusOK && w.Code != http.StatusNotFound {
-		t.Errorf("Expected status code %d or %d, got %d", http.StatusOK, http.StatusNotFound, w.Code)
-	}
-}
-
-func TestDeleteCatAction(t *testing.T) {
-	ctrl := setupCatActionController()
-
-	req, _ := http.NewRequest("DELETE", "/cat-actions/1", nil)
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = req
-	c.Params = []gin.Param{{Key: "cat_id", Value: "1"}}
-
-	ctrl.DeleteCatAction(c)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("Expected status code %d, got %d", http.StatusOK, w.Code)
-	}
-
-	var response map[string]string
-	err := json.Unmarshal(w.Body.Bytes(), &response)
-	if err != nil {
-		t.Fatalf("Failed to parse response: %v", err)
-	}
-
-	if response["message"] != "CatAction deleted successfully" {
-		t.Errorf("Expected success message, got '%s'", response["message"])
-	}
-}
-
 func TestNewCatActionController(t *testing.T) {
 	repo := repository.NewCatActionRepository()
 	catRepo := repository.NewCatRepository()

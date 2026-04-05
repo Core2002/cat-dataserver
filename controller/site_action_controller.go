@@ -149,59 +149,6 @@ func (ctrl *SiteActionController) CreateSiteAction(c *gin.Context) {
 	c.JSON(http.StatusCreated, response)
 }
 
-// UpdateSiteAction 更新 SiteAction
-func (ctrl *SiteActionController) UpdateSiteAction(c *gin.Context) {
-	idStr := c.Param("action_id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
-		return
-	}
-	action, err := ctrl.repo.FindByID(uint(id))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "SiteAction not found"})
-		return
-	}
-	var updates model.SiteAction
-	if err := c.ShouldBindJSON(&updates); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	// 更新数据
-	if updates.SiteID != 0 {
-		action.SiteID = updates.SiteID
-	}
-	if updates.UserID != 0 {
-		action.UserID = updates.UserID
-	}
-	if updates.ActionType != "" {
-		action.ActionType = updates.ActionType
-	}
-	if updates.ActionDetail != "" {
-		action.ActionDetail = updates.ActionDetail
-	}
-	if err := ctrl.repo.Update(action); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, action)
-}
-
-// DeleteSiteAction 删除 SiteAction
-func (ctrl *SiteActionController) DeleteSiteAction(c *gin.Context) {
-	idStr := c.Param("action_id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
-		return
-	}
-	if err := ctrl.repo.Delete(uint(id)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"message": "SiteAction deleted successfully"})
-}
-
 // containsSiteRecordNotFoundError 检查错误信息是否包含记录不存在的错误
 func containsSiteRecordNotFoundError(errMsg string) bool {
 	return strings.Contains(errMsg, "record not found") ||
