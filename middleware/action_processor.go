@@ -72,7 +72,7 @@ func (p *ActionProcessor) updateFSM(action *model.CatAction) (*model.CatFSM, err
 		return p.updateTemperature(action, fsm)
 	case model.CatActionTrimNails:
 		return p.updateTrimNailsTime(action, fsm)
-	case model.CatActionHealthCheck:
+	case model.CatActionWeigh:
 		return p.updateWeight(action, fsm)
 	case model.CatActionSterilize, model.CatActionDeworm, model.CatActionVaccinate:
 		return fsm, nil // 医疗类动作暂不更新FSM
@@ -96,22 +96,17 @@ func (p *ActionProcessor) updateTemperature(action *model.CatAction, fsm *model.
 	return fsm, nil
 }
 
-// updateWeight 更新体重（从体检动作中提取）
+// updateWeight 更新体重（从称重动作中提取）
 func (p *ActionProcessor) updateWeight(action *model.CatAction, fsm *model.CatFSM) (*model.CatFSM, error) {
-	detail, err := model.ParseHealthCheckActionDetail(action.ActionDetail)
+	detail, err := model.ParseWeighActionDetail(action.ActionDetail)
 	if err != nil {
-		return nil, fmt.Errorf("解析体检信息失败: %v", err)
-	}
-
-	if err := p.fsmRepo.UpdateTemperature(action.CatID, detail.Temperature); err != nil {
-		return nil, fmt.Errorf("更新体温失败: %v", err)
+		return nil, fmt.Errorf("解析称重信息失败: %v", err)
 	}
 
 	if err := p.fsmRepo.UpdateWeight(action.CatID, detail.Weight); err != nil {
 		return nil, fmt.Errorf("更新体重失败: %v", err)
 	}
 
-	fsm.TemperatureC = detail.Temperature
 	fsm.WeightKG = detail.Weight
 	return fsm, nil
 }

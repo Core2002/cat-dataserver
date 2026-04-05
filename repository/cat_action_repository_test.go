@@ -63,7 +63,7 @@ func TestCatActionRepositoryFindByCatID(t *testing.T) {
 		SiteID:       1,
 		UserID:       1,
 		ActionType:   model.CatActionTakeTemperature,
-		ActionDetail: `{"temperature": 38.5}`,
+		ActionDetail: `{"temperature_c": 38.5}`,
 	}
 	repo.Create(action)
 

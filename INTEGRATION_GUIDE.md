@@ -75,7 +75,7 @@ curl -X POST http://localhost:8080/cat-actions \
 |---------|-----------------|---------|------|
 | 测体温 | `"39.5"` | `TemperatureC` | 测量体温后自动更新 |
 | 修剪指甲 | `"修剪指甲"` | `TrimNailsTime` | 自动记录为当前时间 |
-| 体检 | `"5.2"` | `WeightKG` | 体重记录自动更新 |
+| 称重 | `"5.2"` | `WeightKG` | 体重记录自动更新 |
 
 #### 仅记录的动作
 
@@ -107,7 +107,7 @@ curl -X POST http://localhost:8080/cat-actions \
 - `"5.2"`
 - `"体重:5.2"`
 - `"体重 5.2kg"`
-- `"体检 体重5.2"`
+- `"称重 体重5.2"`
 
 ## 集成流程
 
@@ -122,7 +122,7 @@ curl -X POST http://localhost:8080/cat-actions \
          ↓
     - 测体温 → 解析体温 → 更新 FSM.TemperatureC
     - 修剪指甲 → 更新 FSM.TrimNailsTime
-    - 体检 → 解析体重 → 更新 FSM.WeightKG
+    - 称重 → 解析体重 → 更新 FSM.WeightKG
     - 其他 → 仅记录动作
          ↓
     返回动作和更新后的状态机

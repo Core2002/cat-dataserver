@@ -36,7 +36,7 @@ type CatActionType string
 const (
 	CatActionTakeTemperature = "测体温"
 	CatActionSterilize       = "绝育"
-	CatActionHealthCheck     = "体检"
+	CatActionWeigh           = "称重"
 	CatActionDeworm          = "驱虫"
 	CatActionTrimNails       = "修剪指甲"
 	CatActionBathing         = "洗澡"
@@ -57,7 +57,7 @@ type CatAction struct {
 
 // TemperatureActionDetail 测体温动作的详细信息
 type TemperatureActionDetail struct {
-	Temperature float32 `json:"temperature" binding:"required,gte=0,lte=50"` // 体温，单位：摄氏度
+	Temperature float32 `json:"temperature_c" binding:"required,gte=0,lte=50"` // 体温，单位：摄氏度
 }
 
 // SterilizeActionDetail 绝育动作的详细信息
@@ -65,11 +65,9 @@ type SterilizeActionDetail struct {
 	Notes string `json:"notes" binding:"required"` // 备注
 }
 
-// HealthCheckActionDetail 体检动作的详细信息
-type HealthCheckActionDetail struct {
-	Temperature float32 `json:"temperature" binding:"required,gte=0,lte=50"` // 体温，单位：摄氏度
-	Weight      float32 `json:"weight" binding:"required,gte=0.1,lte=25"`   // 体重，单位：千克
-	Notes       string  `json:"notes" binding:"required"`                    // 备注
+// WeighActionDetail 称重动作的详细信息
+type WeighActionDetail struct {
+	Weight float32 `json:"weight_kg" binding:"required,gte=0.1,lte=25"` // 体重，单位：千克
 }
 
 // DewormActionDetail 驱虫动作的详细信息
@@ -112,11 +110,11 @@ func ParseSterilizeActionDetail(detail string) (*SterilizeActionDetail, error) {
 	return &actionDetail, nil
 }
 
-// ParseHealthCheckActionDetail 解析体检动作的详细信息
-func ParseHealthCheckActionDetail(detail string) (*HealthCheckActionDetail, error) {
-	var actionDetail HealthCheckActionDetail
+// ParseWeighActionDetail 解析称重动作的详细信息
+func ParseWeighActionDetail(detail string) (*WeighActionDetail, error) {
+	var actionDetail WeighActionDetail
 	if err := json.Unmarshal([]byte(detail), &actionDetail); err != nil {
-		return nil, fmt.Errorf("解析体检信息失败: %v", err)
+		return nil, fmt.Errorf("解析称重信息失败: %v", err)
 	}
 	return &actionDetail, nil
 }

@@ -312,16 +312,16 @@ func TestCreateCatActionWithInvalidSiteID(t *testing.T) {
 	}
 }
 
-// 测试创建体检动作
-func TestCreateHealthCheckAction(t *testing.T) {
+// 测试创建称重动作
+func TestCreateWeighAction(t *testing.T) {
 	ctrl := setupCatActionController()
 
 	newAction := model.CatAction{
 		CatID:      1,
 		SiteID:     1,
 		UserID:     1,
-		ActionType: model.CatActionHealthCheck,
-		ActionDetail: `{"temperature": 38.5, "weight": 4.5, "notes": "体检正常"}`,
+		ActionType: model.CatActionWeigh,
+		ActionDetail: `{"weight_kg": 4.5}`,
 	}
 
 	body, _ := json.Marshal(newAction)
@@ -345,13 +345,8 @@ func TestCreateHealthCheckAction(t *testing.T) {
 		t.Fatalf("Failed to parse response: %v", err)
 	}
 
-	// 检查返回的 FSM 是否更新了体温和体重
+	// 检查返回的 FSM 是否更新了体重
 	if fsm, ok := responseData["fsm"].(map[string]interface{}); ok {
-		if temp, ok := fsm["temperature_c"].(float64); ok {
-			if temp != 38.5 {
-				t.Errorf("Expected temperature 38.5, got %f", temp)
-			}
-		}
 		if weight, ok := fsm["weight_kg"].(float64); ok {
 			if weight != 4.5 {
 				t.Errorf("Expected weight 4.5, got %f", weight)

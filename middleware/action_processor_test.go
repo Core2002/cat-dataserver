@@ -64,7 +64,7 @@ func TestProcessAction_TakeTemperature(t *testing.T) {
 		ActionType:   model.CatActionTakeTemperature,
 		CatID:        2,
 		SiteID:       testSite.SiteID,
-		ActionDetail: `{"temperature": 38.5}`,
+		ActionDetail: `{"temperature_c": 38.5}`,
 	}
 
 	fsm, err := processor.ProcessAction(action)
@@ -139,10 +139,10 @@ func TestUpdateTemperature(t *testing.T) {
 		siteName     string
 		catName      string
 	}{
-		{"Valid temperature", `{"temperature": 38.5}`, 38.5, 10, "站点10", "猫10"},
-		{"High temperature", `{"temperature": 40.0}`, 40.0, 11, "站点11", "猫11"},
-		{"Low temperature", `{"temperature": 35.5}`, 35.5, 12, "站点12", "猫12"},
-		{"Invalid format", `{"temperature": 0}`, 0, 13, "站点13", "猫13"},
+		{"Valid temperature", `{"temperature_c": 38.5}`, 38.5, 10, "站点10", "猫10"},
+		{"High temperature", `{"temperature_c": 40.0}`, 40.0, 11, "站点11", "猫11"},
+		{"Low temperature", `{"temperature_c": 35.5}`, 35.5, 12, "站点12", "猫12"},
+		{"Invalid format", `{"temperature_c": 0}`, 0, 13, "站点13", "猫13"},
 		{"Empty string", "", 0, 14, "站点14", "猫14"},
 	}
 
@@ -268,7 +268,7 @@ func TestUpdateTrimNailsTime(t *testing.T) {
 	assert.WithinDuration(t, now, fsm.TrimNailsTime, time.Second)
 }
 
-func TestProcessAction_HealthCheck(t *testing.T) {
+func TestProcessAction_Weigh(t *testing.T) {
 	setupTestDB(t)
 
 	catRepo := repository.NewCatRepository()
@@ -278,8 +278,8 @@ func TestProcessAction_HealthCheck(t *testing.T) {
 
 	// 创建测试用的 Site 记录
 	testSite := &model.Site{
-		SiteName:             "测试站点HealthCheck",
-		SiteAddress:          "测试地址HealthCheck",
+		SiteName:             "测试站点Weigh",
+		SiteAddress:          "测试地址Weigh",
 		SiteAdminPhoneNumber: "13800138000",
 	}
 	err := siteRepo.Create(testSite)
@@ -288,11 +288,11 @@ func TestProcessAction_HealthCheck(t *testing.T) {
 	// 创建测试用的 Cat 记录
 	testCat := &model.Cat{
 		CatID:             30,
-		CatName:           "测试猫HealthCheck",
+		CatName:           "测试猫Weigh",
 		CatPhotoUri:       "http://example.com/photo30.jpg",
 		CatType:           "英国短毛猫",
 		CatGender:         "公",
-		MasterName:        "测试主人HealthCheck",
+		MasterName:        "测试主人Weigh",
 		MasterPhoneNumber: "13800138000",
 	}
 	err = catRepo.Create(testCat)
@@ -312,16 +312,15 @@ func TestProcessAction_HealthCheck(t *testing.T) {
 	processor := NewActionProcessor(actionRepo, fsmRepo)
 
 	action := &model.CatAction{
-		ActionType:   model.CatActionHealthCheck,
+		ActionType:   model.CatActionWeigh,
 		CatID:        30,
 		SiteID:       testSite.SiteID,
-		ActionDetail: `{"temperature": 39.0, "weight": 4.8, "notes": "体检正常"}`,
+		ActionDetail: `{"weight_kg": 4.8}`,
 	}
 
 	fsm, err := processor.ProcessAction(action)
 	assert.NoError(t, err)
 	assert.NotNil(t, fsm)
-	assert.InDelta(t, 39.0, float64(fsm.TemperatureC), 0.01)
 	assert.InDelta(t, 4.8, float64(fsm.WeightKG), 0.01)
 }
 

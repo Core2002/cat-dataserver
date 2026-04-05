@@ -199,7 +199,7 @@ curl -X POST http://localhost:8080/cat-actions \
     "cat_id": 1,
     "site_id": 1,
     "user_id": 1,
-    "action_type": "体检",
+    "action_type": "称重",
     "action_detail": "5.2"
   }'
 ```
