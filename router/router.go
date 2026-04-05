@@ -52,6 +52,11 @@ func SetupRouter() *gin.Engine {
 	siteFSMRepo := repository.NewSiteFSMRepository()
 	siteFSMController := controller.NewSiteFSMController(siteFSMRepo, siteRepo)
 
+	siteActionRepo := repository.NewSiteActionRepository()
+	// 初始化站点动作处理器
+	siteActionProcessor := middleware.NewSiteActionProcessor(siteActionRepo, siteFSMRepo)
+	siteActionController := controller.NewSiteActionController(siteActionRepo, siteRepo, siteActionProcessor)
+
 	siteController := controller.NewSiteController(siteRepo, siteFSMRepo)
 
 	// Cat CRUD 路由
@@ -110,6 +115,15 @@ func SetupRouter() *gin.Engine {
 	r.PATCH("/site-fsms/:site_id/give-water-time", siteFSMController.UpdateGiveWaterTime)
 	r.PATCH("/site-fsms/:site_id/play-time", siteFSMController.UpdatePlayTime)
 	r.PATCH("/site-fsms/:site_id/clean-litter-time", siteFSMController.UpdateCleanLitterTime)
+
+	// SiteAction CRUD 路由
+	r.GET("/site-actions/page", siteActionController.GetSiteActionsPage)
+	r.GET("/site-actions/:action_id", siteActionController.GetSiteAction)
+	r.GET("/site-actions/site/:site_id", siteActionController.GetSiteActionsBySiteID)
+	r.GET("/site-actions/user/:user_id", siteActionController.GetSiteActionsByUserID)
+	r.POST("/site-actions", siteActionController.CreateSiteAction)
+	r.PUT("/site-actions/:action_id", siteActionController.UpdateSiteAction)
+	r.DELETE("/site-actions/:action_id", siteActionController.DeleteSiteAction)
 
 	// 健康检查
 	r.GET("/health", controller.HealthCheck)

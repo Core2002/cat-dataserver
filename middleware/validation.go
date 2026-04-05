@@ -125,6 +125,8 @@ func RegisterCustomValidators(v *validator.Validate) {
 	v.RegisterValidation("catEventType", validateCatEventType)
 	// 验证 CatActionType 是否合法
 	v.RegisterValidation("catActionType", validateCatActionType)
+	// 验证 SiteActionType 是否合法
+	v.RegisterValidation("siteActionType", validateSiteActionType)
 	// 验证电话号码格式
 	v.RegisterValidation("phone", validatePhoneNumber)
 }
@@ -160,6 +162,25 @@ func validateCatActionType(fl validator.FieldLevel) bool {
 		string(model.CatActionTrimNails),
 		string(model.CatActionBathing),
 		string(model.CatActionVaccinate),
+	}
+
+	for _, t := range validTypes {
+		if value == t {
+			return true
+		}
+	}
+	return false
+}
+
+// validateSiteActionType 验证站点操作类型
+func validateSiteActionType(fl validator.FieldLevel) bool {
+	value := fl.Field().String()
+	validTypes := []string{
+		string(model.SiteActionDisinfect),
+		string(model.SiteActionFeed),
+		string(model.SiteActionGiveWater),
+		string(model.SiteActionPlay),
+		string(model.SiteActionCleanLitter),
 	}
 
 	for _, t := range validTypes {
