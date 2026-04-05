@@ -2,18 +2,18 @@
 
 ## 架构概述
 
-本项目采用**中间件驱动**的架构，将动作处理逻辑整合到现有业务流程中，而不是创建独立的上报路由。
+本项目采用**中间件驱动**的架构，将动作处理逻辑整合到现有业务流程中，而不是创建独立的上报路由。系统包含两个独立的动作处理器：猫咪动作处理器和站点动作处理器。
 
 ## 核心组件
 
-### 1. ActionProcessor (动作处理器)
+### 1. ActionProcessor (猫咪动作处理器)
 
 位置：`middleware/action_processor.go`
 
 **职责**：
 - 处理所有 CatAction 创建请求
 - 自动记录动作到数据库
-- 根据动作类型自动更新状态机 (FSM)
+- 根据动作类型自动更新猫咪状态机 (FSM)
 - 解析动作详情中的数据（如体温、体重）
 
 **主要方法**：
@@ -23,25 +23,45 @@
 func (p *ActionProcessor) ProcessAction(action *model.CatAction) (*model.CatFSM, error)
 ```
 
-### 2. CatActionController (动作控制器)
+### 2. SiteActionProcessor (站点动作处理器)
+
+位置：`middleware/site_action_processor.go`
+
+**职责**：
+- 处理所有 SiteAction 创建请求
+- 自动记录动作到数据库
+- 根据动作类型自动更新站点状态机 (FSM)
+
+**主要方法**：
+
+```go
+// ProcessAction 处理动作并更新状态机
+func (p *SiteActionProcessor) ProcessAction(action *model.SiteAction) (*model.SiteFSM, error)
+```
+
+### 3. CatActionController (猫咪动作控制器)
 
 已集成 ActionProcessor，在创建动作时自动触发状态机更新。
 
+### 4. SiteActionController (站点动作控制器)
+
+已集成 SiteActionProcessor，在创建动作时自动触发状态机更新。
+
 ## 使用方式
 
-### 基本用法
+### 猫咪动作
 
 创建任何 CatAction 都会自动触发状态机更新：
 
 ```bash
-curl -X POST http://localhost:8080/cat-actions \
+curl -X POST http://localhost:5100/cat-actions \
   -H "Content-Type: application/json" \
   -d '{
     "cat_id": 1,
     "site_id": 1,
     "user_id": 1,
     "action_type": "测体温",
-    "action_detail": "39.5"
+    "action_detail": "{\"temperature_c\": 39.5}"
   }'
 ```
 
@@ -54,7 +74,7 @@ curl -X POST http://localhost:8080/cat-actions \
     "site_id": 1,
     "user_id": 1,
     "action_type": "测体温",
-    "action_detail": "39.5",
+    "action_detail": "{\"temperature_c\": 39.5}",
     "created_at": "2026-03-22T23:45:00Z"
   },
   "fsm": {
@@ -67,49 +87,70 @@ curl -X POST http://localhost:8080/cat-actions \
 }
 ```
 
+### 站点动作
+
+创建任何 SiteAction 都会自动触发站点状态机更新：
+
+```bash
+curl -X POST http://localhost:5100/site-actions \
+  -H "Content-Type: application/json" \
+  -H "X-User-ID: 1" \
+  -d '{
+    "site_id": 1,
+    "action_type": "喂食",
+    "action_detail": "{\"food_type\": \"猫粮\", \"amount\": \"100g\"}"
+  }'
+```
+
+**响应**：
+```json
+{
+  "action": {
+    "action_id": 1,
+    "site_id": 1,
+    "user_id": 1,
+    "action_type": "喂食",
+    "action_detail": "{\"food_type\": \"猫粮\", \"amount\": \"100g\"}",
+    "created_at": "2026-04-05T10:00:00Z"
+  },
+  "fsm": {
+    "site_id": 1,
+    "last_disinfect_time": "2026-04-04T08:00:00Z",
+    "last_feed_time": "2026-04-05T10:00:00Z",
+    "last_give_water_time": "2026-04-05T09:30:00Z",
+    "last_play_time": "2026-04-05T09:00:00Z",
+    "last_clean_litter_time": "2026-04-05T08:00:00Z"
+  }
+}
+```
+
 ### 支持的动作类型
 
-#### 更新状态机的动作
+#### 猫咪动作
 
-| 动作类型 | ActionDetail 格式 | FSM 字段 | 示例 |
+| 动作类型 | ActionDetail 格式 | FSM 字段 | 说明 |
 |---------|-----------------|---------|------|
-| 测体温 | `"39.5"` | `TemperatureC` | 测量体温后自动更新 |
-| 修剪指甲 | `"修剪指甲"` | `TrimNailsTime` | 自动记录为当前时间 |
-| 称重 | `"5.2"` | `WeightKG` | 体重记录自动更新 |
+| 测体温 | `{"temperature_c": 39.5}` | `TemperatureC` | 测量体温后自动更新 |
+| 称重 | `{"weight_kg": 5.2}` | `WeightKG` | 体重记录自动更新 |
+| 修剪指甲 | `{"notes": "xxx"}` | `TrimNailsTime` | 自动记录为当前时间 |
+| 绝育 | `{"notes": "xxx"}` | - | 仅记录 |
+| 驱虫 | `{"drug_name": "xxx", "dosage": "xxx"}` | - | 仅记录 |
+| 疫苗 | `{"vaccine_name": "xxx", "batch_no": "xxx"}` | - | 仅记录 |
+| 洗澡 | `{"notes": "xxx"}` | - | 仅记录 |
 
-#### 仅记录的动作
+#### 站点动作
 
-| 动作类型 | 说明 |
-|---------|------|
-| 喂食 | 仅记录，不更新 FSM |
-| 喂水 | 仅记录，不更新 FSM |
-| 逗猫 | 仅记录，不更新 FSM |
-| 绝育 | 仅记录，不更新 FSM |
-| 驱虫 | 仅记录，不更新 FSM |
-| 疫苗 | 仅记录，不更新 FSM |
-| 清理猫砂 | 仅记录，不更新 FSM |
-| 环境消毒 | 仅记录，不更新 FSM |
-| 洗脚 | 仅记录，不更新 FSM |
-
-### 数据解析格式
-
-#### 体温解析
-
-支持以下格式（自动提取数字）：
-- `"39.5"`
-- `"体温:39.5"`
-- `"温度 39.5℃"`
-- `"测体温 39.5"`
-
-#### 体重解析
-
-支持以下格式（自动提取数字）：
-- `"5.2"`
-- `"体重:5.2"`
-- `"体重 5.2kg"`
-- `"称重 体重5.2"`
+| 动作类型 | ActionDetail 格式 | FSM 字段 | 说明 |
+|---------|-----------------|---------|------|
+| 消毒 | `{"disinfectant": "xxx", "notes": "xxx"}` | `LastDisinfectTime` | 自动记录为当前时间 |
+| 喂食 | `{"food_type": "xxx", "amount": "xxx"}` | `LastFeedTime` | 自动记录为当前时间 |
+| 喂水 | `{"water_type": "xxx"}` | `LastGiveWaterTime` | 自动记录为当前时间 |
+| 逗猫 | `{"duration": 30, "notes": "xxx"}` | `LastPlayTime` | 自动记录为当前时间 |
+| 清理猫砂 | `{"litter_type": "xxx"}` | `LastCleanLitter` | 自动记录为当前时间 |
 
 ## 集成流程
+
+### 猫咪动作流程
 
 ```
 用户请求 → CatActionController.CreateCatAction
@@ -128,45 +169,43 @@ curl -X POST http://localhost:8080/cat-actions \
     返回动作和更新后的状态机
 ```
 
+### 站点动作流程
+
+```
+用户请求 → SiteActionController.CreateSiteAction
+         ↓
+    SiteActionProcessor.ProcessAction
+         ↓
+    1. 记录动作到数据库
+         ↓
+    2. 根据动作类型处理
+         ↓
+    - 消毒 → 更新 FSM.LastDisinfectTime
+    - 喂食 → 更新 FSM.LastFeedTime
+    - 喂水 → 更新 FSM.LastGiveWaterTime
+    - 逗猫 → 更新 FSM.LastPlayTime
+    - 清理猫砂 → 更新 FSM.LastCleanLitter
+         ↓
+    返回动作和更新后的状态机
+```
+
 ## 扩展指南
 
-### 添加新的状态机更新逻辑
+### 添加新的猫咪动作类型
 
-1. 在 `middleware/action_processor.go` 中添加新的处理方法
+1. 在 `model/cat_event.go` 中添加新的 `CatActionType` 常量
+2. 在 `middleware/validation.go` 的 `validateCatActionType` 中添加验证
+3. 在 `middleware/action_processor.go` 中添加处理逻辑
+4. 如需更新 FSM，添加对应的 repository 方法
+5. 编写测试验证功能
 
-```go
-func (p *ActionProcessor) updateNewField(action *model.CatAction, fsm *model.CatFSM) (*model.CatFSM, error) {
-    // 解析数据
-    value := parseNewValue(action.ActionDetail)
-    if value == 0 {
-        return fsm, nil
-    }
+### 添加新的站点动作类型
 
-    // 更新数据库
-    if err := p.fsmRepo.UpdateNewField(action.CatID, value); err != nil {
-        return nil, err
-    }
-
-    // 更新内存对象
-    fsm.NewField = value
-    return fsm, nil
-}
-```
-
-2. 在 `updateFSM` 方法中添加 case
-
-```go
-case model.CatActionNewType:
-    return p.updateNewField(action, fsm)
-```
-
-3. 如果需要新的数据库更新方法，在 `repository/cat_fsm_repository.go` 中添加
-
-```go
-func (r *CatFSMRepository) UpdateNewField(catID uint, value float32) error {
-    return database.DB.Model(&model.CatFSM{}).Where("cat_id = ?", catID).Update("new_field", value).Error
-}
-```
+1. 在 `model/site_action.go` 中添加新的 `SiteActionType` 常量
+2. 在 `middleware/validation.go` 的 `validateSiteActionType` 中添加验证
+3. 在 `middleware/site_action_processor.go` 中添加处理逻辑
+4. 如需更新 FSM，添加对应的 repository 方法
+5. 编写测试验证功能
 
 ## 测试
 
@@ -192,34 +231,19 @@ if freshFSM.TemperatureC != expectedTemp {
 }
 ```
 
-## 与旧架构的对比
-
-### 旧架构（已删除）
-
-- 独立的上报路由 (`/api/actions`, `/api/cats/:cat_id/temperature` 等)
-- 独立的 Service 层
-- 专门的 ReportController
-
-### 新架构（当前）
-
-- **集成式**：动作处理整合到现有业务逻辑中
-- **自动化**：通过 ActionProcessor 中间件自动处理
-- **统一接口**：使用标准的 CatAction 创建接口
-- **灵活性**：易于扩展，支持更多动作类型
-
 ## 最佳实践
 
 ### 1. 使用标准接口
 
-创建动作使用统一的 `POST /cat-actions` 接口，而不是特定数据的接口。
+创建动作使用统一的 `POST /cat-actions` 和 `POST /site-actions` 接口，而不是特定数据的接口。
 
 ### 2. 数据格式
 
-将关键数据（如体温、体重）直接放在 `action_detail` 中，便于自动解析。
+将关键数据（如体温、体重）使用 JSON 格式放在 `action_detail` 中，便于自动解析。
 
 ### 3. 错误处理
 
-即使状态机更新失败，动作记录也会保存，确保数据不丢失。
+状态机更新失败时会自动回滚动作记录，确保数据一致性。
 
 ### 4. 日志记录
 
@@ -231,7 +255,7 @@ if freshFSM.TemperatureC != expectedTemp {
 
 1. **更简洁**：删除了不必要的独立路由和服务层
 2. **更集成**：动作处理完全整合到现有业务流程
-3. **更易维护**：逻辑集中在 ActionProcessor 中
+3. **更易维护**：逻辑集中在 ActionProcessor 和 SiteActionProcessor 中
 4. **更易扩展**：添加新动作类型只需修改一处
 5. **测试完整**：包含对状态机更新的完整测试
 

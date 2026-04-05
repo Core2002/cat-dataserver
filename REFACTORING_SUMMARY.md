@@ -2,7 +2,7 @@
 
 ## 重构目标
 
-将动作上报功能从独立的上报路由重构为集成到现有业务逻辑的中间件模式。
+将动作上报功能从独立的上报路由重构为集成到现有业务逻辑的中间件模式，并新增站点动作处理功能。
 
 ## 重构内容
 
@@ -19,9 +19,16 @@ service/action_handler_test.go          # 动作处理器测试
 ### 新增的文件
 
 ```
-middleware/action_processor.go           # 新：动作处理器中间件
-middleware/action_processor_test.go     # 新：动作处理器测试
-INTEGRATION_GUIDE.md                   # 新：集成指南
+middleware/action_processor.go           # 猫咪动作处理器中间件
+middleware/action_processor_test.go     # 猫咪动作处理器测试
+middleware/site_action_processor.go     # 站点动作处理器中间件
+controller/site_action_controller.go    # 站点动作控制器
+controller/site_fsm_controller.go       # 站点状态机控制器（只读）
+model/site_action.go                    # 站点动作模型
+model/site_fsm.go                       # 站点状态机模型
+repository/site_action_repository.go    # 站点动作仓库
+repository/site_fsm_repository.go       # 站点状态机仓库
+INTEGRATION_GUIDE.md                    # 集成指南
 ```
 
 ### 修改的文件
@@ -71,22 +78,13 @@ router/router.go                       # 移除独立上报路由
 │   前端应用   │
 └──────┬──────┘
        │
-       └─ POST /cat-actions (统一接口)
-             │
-       ┌──────┴──────┐
-       │CatActionController│
-       └──────┬──────┘
-              │
-       ┌──────┴──────┐
-       │ActionProcessor │  ← Middleware 层
-       └──────┬──────┘
-              │
-              ├─ 记录动作
-              └─ 自动更新 FSM
-                    │
-            ┌───────┴───────┐
-            │  Repositories  │
-            └───────────────┘
+       ├─ POST /cat-actions (猫咪动作统一接口)
+       │      ↓
+       │   CatActionController → ActionProcessor → CatFSM (自动更新)
+       │
+       └─ POST /site-actions (站点动作统一接口)
+              ↓
+           SiteActionController → SiteActionProcessor → SiteFSM (自动更新)
 ```
 
 **优势**：
@@ -94,6 +92,7 @@ router/router.go                       # 移除独立上报路由
 - 自动化处理，无需手动调用
 - 集成到现有业务逻辑
 - 易于维护和扩展
+- 支持猫咪和站点两种动作类型
 
 ## 核心改进
 
@@ -112,7 +111,7 @@ PATCH /cat-fsms/:id/temp  // 更新体温
 POST /cat-actions
 {
   "action_type": "测体温",
-  "action_detail": "39.5"
+  "action_detail": "{\"temperature_c\": 39.5}"
 }
 // 自动记录动作并更新 FSM
 ```
@@ -125,7 +124,8 @@ POST /cat-actions
 - 修剪指甲：专门的接口和处理器
 
 **现在**：
-- 所有动作：统一的上报接口
+- 猫咪动作：统一的上报接口 `POST /cat-actions`
+- 站点动作：统一的上报接口 `POST /site-actions`
 - 自动识别动作类型
 - 智能数据解析
 
@@ -138,10 +138,10 @@ POST /cat-actions
 - 总计 ~500 行代码
 
 **现在**：
-- 1 个处理器方法
-- 3 个更新方法
-- 2 个解析函数
-- 总计 ~150 行代码
+- 2 个处理器（猫咪 + 站点）
+- 模块化的更新方法
+- JSON 格式的数据解析
+- 代码量大幅减少
 
 ## 功能验证
 
@@ -155,9 +155,15 @@ POST /cat-actions
    - TestActionProcessor_ProcessWeightAction  (体重更新)
    - TestActionProcessor_ProcessTrimNailsAction (时间更新)
 
+✅ middleware/site_action_processor.go
+   - 站点动作处理和 FSM 更新
+
 ✅ controller/cat_action_controller_test.go
    - TestCreateCatAction                  (集成测试)
    - 其他现有测试保持不变
+
+✅ controller/site_action_controller.go
+   - 站点动作创建和 FSM 自动更新
 
 ✅ 所有测试通过
 ```
@@ -167,21 +173,22 @@ POST /cat-actions
 1. **动作记录**：所有动作都正确保存到数据库
 2. **FSM 更新**：相应的状态机字段自动更新
 3. **数据解析**：从 ActionDetail 中正确提取数据
-4. **错误处理**：即使 FSM 更新失败，动作也会保存
+4. **错误处理**：状态机更新失败时自动回滚动作记录
+5. **站点动作**：站点动作正确更新站点状态机
 
 ## 使用示例
 
 ### 测量体温
 
 ```bash
-curl -X POST http://localhost:8080/cat-actions \
+curl -X POST http://localhost:5100/cat-actions \
   -H "Content-Type: application/json" \
   -d '{
     "cat_id": 1,
     "site_id": 1,
     "user_id": 1,
     "action_type": "测体温",
-    "action_detail": "39.5"
+    "action_detail": "{\"temperature_c\": 39.5}"
   }'
 ```
 
@@ -193,14 +200,14 @@ curl -X POST http://localhost:8080/cat-actions \
 ### 记录体重
 
 ```bash
-curl -X POST http://localhost:8080/cat-actions \
+curl -X POST http://localhost:5100/cat-actions \
   -H "Content-Type: application/json" \
   -d '{
     "cat_id": 1,
     "site_id": 1,
     "user_id": 1,
     "action_type": "称重",
-    "action_detail": "5.2"
+    "action_detail": "{\"weight_kg\": 5.2}"
   }'
 ```
 
@@ -212,14 +219,14 @@ curl -X POST http://localhost:8080/cat-actions \
 ### 修剪指甲
 
 ```bash
-curl -X POST http://localhost:8080/cat-actions \
+curl -X POST http://localhost:5100/cat-actions \
   -H "Content-Type: application/json" \
   -d '{
     "cat_id": 1,
     "site_id": 1,
     "user_id": 1,
     "action_type": "修剪指甲",
-    "action_detail": "修剪指甲"
+    "action_detail": "{\"notes\": \"修剪完成\"}"
   }'
 ```
 
@@ -227,6 +234,24 @@ curl -X POST http://localhost:8080/cat-actions \
 - ✅ 动作记录已保存
 - ✅ FSM.TrimNailsTime 自动更新为当前时间
 - ✅ 返回更新后的 FSM 状态
+
+### 站点喂食
+
+```bash
+curl -X POST http://localhost:5100/site-actions \
+  -H "Content-Type: application/json" \
+  -H "X-User-ID: 1" \
+  -d '{
+    "site_id": 1,
+    "action_type": "喂食",
+    "action_detail": "{\"food_type\": \"猫粮\", \"amount\": \"100g\"}"
+  }'
+```
+
+**结果**：
+- ✅ 动作记录已保存
+- ✅ SiteFSM.LastFeedTime 自动更新为当前时间
+- ✅ 返回更新后的 SiteFSM 状态
 
 ## 性能影响
 
@@ -297,10 +322,11 @@ func (p *ActionProcessor) updateTemperature(action *model.CatAction, fsm *model.
 
 1. ✅ 删除了 ~500 行冗余代码
 2. ✅ 简化了架构（从 3 层到 2 层）
-3. ✅ 统一了接口（从 4 个到 1 个）
+3. ✅ 统一了接口（从 4 个到 2 个）
 4. ✅ 实现了自动化处理
-5. ✅ 保持了完整的功能
-6. ✅ 通过了所有测试
+5. ✅ 新增了站点动作处理功能
+6. ✅ 保持了完整的功能
+7. ✅ 通过了所有测试
 
 ### 设计原则
 

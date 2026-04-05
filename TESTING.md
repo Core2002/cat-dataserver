@@ -11,15 +11,22 @@ cat-dataserver/
 │   ├── cat_event_controller_test.go
 │   ├── cat_action_controller_test.go
 │   ├── cat_fsm_controller_test.go
-│   └── site_controller_test.go
+│   ├── site_controller_test.go
+│   ├── site_action_controller_test.go
+│   └── site_fsm_controller_test.go
 ├── repository/
 │   ├── cat_repository_test.go
 │   ├── cat_event_repository_test.go
 │   ├── cat_action_repository_test.go
 │   ├── cat_fsm_repository_test.go
-│   └── site_repository_test.go
+│   ├── site_repository_test.go
+│   ├── site_action_repository_test.go
+│   └── site_fsm_repository_test.go
 ├── model/
 │   └── pagination_test.go
+├── middleware/
+│   ├── action_processor_test.go
+│   └── validation_test.go
 └── router/
     └── router_test.go
 ```
@@ -82,16 +89,24 @@ go tool cover -html=coverage.out
 ### Controller 层测试
 - **CatController**: 测试猫的 CRUD 操作、分页查询
 - **CatEventController**: 测试猫事件的 CRUD 操作、按猫ID和站点ID查询
-- **CatActionController**: 测试猫操作的 CRUD 操作、按猫ID、站点ID和用户ID查询
-- **CatFSMController**: 测试猫状态的 CRUD 操作、更新体温、体重、修剪指甲时间
-- **SiteController**: 测试站点的 CRUD 操作、更新消毒时间、喂食时间、喂水时间、逗猫时间
+- **CatActionController**: 测试猫操作的 CRUD 操作、按猫ID、站点ID和用户ID查询，验证 FSM 自动更新
+- **CatFSMController**: 测试猫状态机的只读操作
+- **SiteController**: 测试站点的 CRUD 操作
+- **SiteActionController**: 测试站点动作的 CRUD 操作、验证 FSM 自动更新
+- **SiteFSMController**: 测试站点状态机的只读操作
 
 ### Repository 层测试
 - **CatRepository**: 测试数据库 CRUD 操作、分页查询
 - **CatEventRepository**: 测试事件数据库操作、按ID、猫ID、站点ID查询
 - **CatActionRepository**: 测试操作数据库操作、按ID、猫ID、站点ID、用户ID查询
 - **CatFSMRepository**: 测试状态数据库操作、更新体温、体重、修剪指甲时间
-- **SiteRepository**: 测试站点数据库操作、更新各类时间字段
+- **SiteRepository**: 测试站点数据库操作
+- **SiteActionRepository**: 测试站点动作数据库操作
+- **SiteFSMRepository**: 测试站点状态数据库操作、更新各类时间字段
+
+### Middleware 层测试
+- **ActionProcessor**: 测试猫咪动作处理器、状态机自动更新
+- **Validators**: 测试自定义验证器
 
 ### Model 层测试
 - **PaginationRequest**: 测试分页参数处理、默认值设置
@@ -104,7 +119,6 @@ go tool cover -html=coverage.out
 - **健康检查**: 测试 /health 端点
 - **CRUD 端点**: 测试各资源的创建、读取、更新、删除端点
 - **查询端点**: 测试按条件查询的端点
-- **PATCH 端点**: 测试部分更新端点
 
 ## 测试特点
 
@@ -118,9 +132,11 @@ go tool cover -html=coverage.out
 测试使用模拟数据进行操作，主要包括：
 - 猫的基本信息（名称、照片、种类、性别等）
 - 猫事件（生病、受伤、怀孕等）
-- 猫操作（喂食、喂水、测体温等）
+- 猫动作（测体温、称重、修剪指甲、绝育、驱虫、疫苗、洗澡）
 - 猫状态（体温、体重、修剪指甲时间等）
 - 站点信息（名称、地址、管理员电话等）
+- 站点动作（消毒、喂食、喂水、逗猫、清理猫砂）
+- 站点状态（消毒时间、喂食时间、喂水时间、逗猫时间、清理猫砂时间）
 
 ## 注意事项
 

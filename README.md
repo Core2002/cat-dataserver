@@ -9,29 +9,31 @@
 通过统一的动作接口，自动记录所有操作并更新猫咪和设施状态机。
 
 **特性**：
-- 自动记录所有动作（喂食、测体温、称重、清理等）
+- 自动记录所有猫咪动作（测体温、称重、修剪指甲、绝育、驱虫、疫苗、洗澡等）
 - 根据动作类型自动更新猫咪状态机（体温、体重、修剪指甲时间）
-- 自动更新设施状态机（消毒、喂食、喂水、逗猫时间）
+- 自动记录所有站点动作（消毒、喂食、喂水、逗猫、清理猫砂）
+- 自动更新设施状态机（消毒时间、喂食时间、喂水时间、逗猫时间、清理猫砂时间）
 - 智能数据解析（自动提取体温、体重等数据）
 - 完整的错误处理和日志记录
-- 状态机更新失败不影响动作记录保存
+- 状态机更新失败时自动回滚动作记录
 
 ### 2. 数据模型
 
 #### 猫咪相关
 - **Cat**: 猫咪基本信息（名称、照片、种类、性别、主人信息等）
 - **CatEvent**: 猫咪事件（生病、受伤、怀孕、分娩、死亡、合同解除）
-- **CatAction**: 猫咪操作记录（喂食、喂水、测体温、逗猫、绝育、称重、驱虫、清理猫砂、环境消毒、修剪指甲、洗脚、疫苗）
+- **CatAction**: 猫咪操作记录（测体温、称重、修剪指甲、绝育、驱虫、疫苗、洗澡）
 - **CatFSM**: 猫咪状态机（体温、体重、修剪指甲时间）
 
 #### 设施相关
 - **Site**: 设施信息（猫舍、站点等，包含名称、地址、管理员电话）
-- **SiteFSM**: 设施状态机（上次消毒时间、上次喂食时间、上次喂水时间、上次逗猫时间）
+- **SiteAction**: 站点操作记录（消毒、喂食、喂水、逗猫、清理猫砂）
+- **SiteFSM**: 设施状态机（消毒时间、喂食时间、喂水时间、逗猫时间、清理猫砂时间）
 
 ### 3. 数据验证
 
 - 完整的数据校验机制
-- 自定义验证器（事件类型、动作类型、电话号码等）
+- 自定义验证器（事件类型、动作类型、站点动作类型、电话号码等）
 - 友好的中文错误提示
 
 ## 快速开始
@@ -206,7 +208,7 @@ const (
   "site_id": 1,
   "user_id": 1,
   "action_type": "测体温",
-  "action_detail": "{\"temperature\": 39.5}"
+  "action_detail": "{\"temperature_c\": 39.5}"
 }
 ```
 
@@ -219,7 +221,7 @@ const (
     "site_id": 1,
     "user_id": 1,
     "action_type": "测体温",
-    "action_detail": "{\"temperature\": 39.5}",
+    "action_detail": "{\"temperature_c\": 39.5}",
     "created_at": "2026-03-25T10:00:00Z"
   },
   "fsm": {
@@ -240,7 +242,7 @@ const (
 
 **DELETE** `/cat-actions/:id`
 
-### 猫咪状态机管理
+### 猫咪状态机管理（只读，由动作驱动更新）
 
 #### 获取状态机列表（分页）
 
@@ -248,63 +250,13 @@ const (
 
 #### 获取单个状态机
 
-**GET** `/cat-fsms/:id`
+**GET** `/cat-fsms/:cat_id`
 
 #### 按站点ID查询状态机
 
 **GET** `/cat-fsms/site/:site_id`
 
-#### 创建状态机
-
-**POST** `/cat-fsms`
-
-```json
-{
-  "cat_id": 1,
-  "site_id": 1,
-  "temperature_c": 39.5,
-  "weight_kg": 4.2,
-  "trim_nails_time": "2026-03-22T23:45:00Z"
-}
-```
-
-#### 更新状态机
-
-**PUT** `/cat-fsms/:id`
-
-#### 删除状态机
-
-**DELETE** `/cat-fsms/:id`
-
-#### 更新体温
-
-**PATCH** `/cat-fsms/:cat_id/temperature`
-
-```json
-{
-  "temperature_c": 39.5
-}
-```
-
-#### 更新体重
-
-**PATCH** `/cat-fsms/:cat_id/weight`
-
-```json
-{
-  "weight_kg": 4.2
-}
-```
-
-#### 更新修剪指甲时间
-
-**PATCH** `/cat-fsms/:cat_id/trim-nails-time`
-
-```json
-{
-  "trim_nails_time": "2026-03-25T10:00:00Z"
-}
-```
+> **注意**：CatFSM 由 CatAction 自动驱动更新，不提供直接创建、更新和删除接口。
 
 ### 设施管理
 
@@ -337,104 +289,102 @@ const (
 
 **DELETE** `/sites/:id`
 
-### 设施状态机管理
+### 设施状态机管理（只读，由动作驱动更新）
 
-#### 获取设施状态机
+#### 获取设施状态机列表（分页）
 
-**GET** `/site-fsms/:id`
+**GET** `/site-fsms/page?page=1&pageSize=10`
+
+#### 获取单个设施状态机
+
+**GET** `/site-fsms/:site_id`
 
 #### 按站点ID查询状态机
 
 **GET** `/site-fsms/site/:site_id`
 
-#### 创建设施状态机
+> **注意**：SiteFSM 由 SiteAction 自动驱动更新，不提供直接创建、更新和删除接口。
 
-**POST** `/site-fsms`
+### 站点动作记录（自动更新状态机）
+
+#### 获取动作列表（分页）
+
+**GET** `/site-actions/page?page=1&pageSize=10`
+
+#### 获取单个动作
+
+**GET** `/site-actions/:action_id`
+
+#### 按站点ID查询动作
+
+**GET** `/site-actions/site/:site_id`
+
+#### 按用户ID查询动作
+
+**GET** `/site-actions/user/:user_id`
+
+#### 创建动作（自动更新 FSM）
+
+**POST** `/site-actions`
+
+请求头：
+```
+X-User-ID: 1
+```
 
 ```json
 {
   "site_id": 1,
-  "last_disinfect_time": "2026-03-25T08:00:00Z",
-  "last_feed_time": "2026-03-25T09:00:00Z",
-  "last_give_water_time": "2026-03-25T09:30:00Z",
-  "last_play_time": "2026-03-25T10:00:00Z"
+  "action_type": "喂食",
+  "action_detail": "{\"food_type\": \"猫粮\", \"amount\": \"100g\"}"
 }
 ```
 
-#### 更新设施状态机
-
-**PUT** `/site-fsms/:id`
-
-#### 删除设施状态机
-
-**DELETE** `/site-fsms/:id`
-
-#### 更新消毒时间
-
-**PATCH** `/site-fsms/:site_id/disinfect-time`
-
+**响应**：
 ```json
 {
-  "last_disinfect_time": "2026-03-25T10:00:00Z"
-}
-```
-
-#### 更新喂食时间
-
-**PATCH** `/site-fsms/:site_id/feed-time`
-
-```json
-{
-  "last_feed_time": "2026-03-25T10:00:00Z"
-}
-```
-
-#### 更新喂水时间
-
-**PATCH** `/site-fsms/:site_id/give-water-time`
-
-```json
-{
-  "last_give_water_time": "2026-03-25T10:00:00Z"
-}
-```
-
-#### 更新逗猫时间
-
-**PATCH** `/site-fsms/:site_id/play-time`
-
-```json
-{
-  "last_play_time": "2026-03-25T10:00:00Z"
+  "action": {
+    "action_id": 1,
+    "site_id": 1,
+    "user_id": 1,
+    "action_type": "喂食",
+    "action_detail": "{\"food_type\": \"猫粮\", \"amount\": \"100g\"}",
+    "created_at": "2026-04-05T10:00:00Z"
+  },
+  "fsm": {
+    "site_id": 1,
+    "last_disinfect_time": "2026-04-04T08:00:00Z",
+    "last_feed_time": "2026-04-05T10:00:00Z",
+    "last_give_water_time": "2026-04-05T09:30:00Z",
+    "last_play_time": "2026-04-05T09:00:00Z",
+    "last_clean_litter_time": "2026-04-05T08:00:00Z"
+  }
 }
 ```
 
 ## 支持的动作类型
 
-### 更新猫咪状态机的动作
+### 猫咪动作类型
 
 | 动作类型 | action_type | action_detail 格式 (JSON) | 更新的 FSM 字段 |
 |---------|-------------|-------------------------|----------------|
-| 测体温 | "测体温" | `{"temperature": 39.5}` | TemperatureC |
-| 修剪指甲 | "修剪指甲" | `"修剪指甲"` (任意字符串) | TrimNailsTime |
-| 称重 | "称重" | `{"weight": 5.2}` | WeightKG |
+| 测体温 | "测体温" | `{"temperature_c": 39.5}` | TemperatureC |
+| 称重 | "称重" | `{"weight_kg": 5.2}` | WeightKG |
+| 修剪指甲 | "修剪指甲" | `{"notes": "修剪完成"}` | TrimNailsTime |
+| 绝育 | "绝育" | `{"notes": "手术完成"}` | - |
+| 驱虫 | "驱虫" | `{"drug_name": "xxx", "dosage": "xxx"}` | - |
+| 疫苗 | "疫苗" | `{"vaccine_name": "xxx", "batch_no": "xxx"}` | - |
+| 洗澡 | "洗澡" | `{"notes": "洗澡完成"}` | - |
 
-### 更新设施状态机的动作
+### 站点动作类型
 
-| 动作类型 | action_type | action_detail 格式 | 更新的 FSM 字段 |
-|---------|-------------|-------------------|----------------|
-| 喂食 | "喂食" | "喂食" (任意字符串) | LastFeedTime |
-| 喂水 | "喂水" | "喂水" (任意字符串) | LastGiveWaterTime |
-| 逗猫 | "逗猫" | "逗猫" (任意字符串) | LastPlayTime |
-| 环境消毒 | "环境消毒" | "环境消毒" (任意字符串) | LastDisinfectTime |
-
-### 仅记录的动作
-
-- "绝育"
-- "驱虫"
-- "疫苗"
-- "清理猫砂"
-- "洗脚"
+| 动作类型 | action_type | action_detail 格式 (JSON) | 更新的 FSM 字段 |
+|---------|-------------|-------------------------|----------------|
+| 消毒 | "消毒" | `{"disinfectant": "xxx", "notes": "xxx"}` | LastDisinfectTime |
+| 喂食 | "喂食" | `{"food_type": "猫粮", "amount": "100g"}` | LastFeedTime |
+| 喂水 | "喂水" | `{"water_type": "纯净水"}` | LastGiveWaterTime |
+| 逗猫 | "逗猫" | `{"duration": 30, "notes": "xxx"}` | LastPlayTime |
+| 清理猫砂 | "清理猫砂" | `{"litter_type": "xxx"}` | LastCleanLitter |
 
 ## 数据格式规范
 
@@ -442,12 +392,12 @@ const (
 
 ```json
 {
-  "temperature": 39.5
+  "temperature_c": 39.5
 }
 ```
 
 **字段说明**：
-- `temperature`：体温值，单位：摄氏度
+- `temperature_c`：体温值，单位：摄氏度
 - 范围：0°C - 50°C
 - 类型：浮点数
 
@@ -455,18 +405,51 @@ const (
 
 ```json
 {
-  "weight": 5.2
+  "weight_kg": 5.2
 }
 ```
 
 **字段说明**：
-- `weight`：体重值，单位：千克
+- `weight_kg`：体重值，单位：千克
 - 范围：0.1kg - 25kg
 - 类型：浮点数
 
-### 其他动作详情
+### 驱虫动作详情
 
-对于不需要传递结构化数据的动作（如修剪指甲、喂食等），`action_detail` 可以是任意非空字符串。
+```json
+{
+  "drug_name": "福来恩",
+  "dosage": "一支"
+}
+```
+
+### 疫苗动作详情
+
+```json
+{
+  "vaccine_name": "猫三联",
+  "batch_no": "20260401001"
+}
+```
+
+### 喂食动作详情
+
+```json
+{
+  "food_type": "猫粮",
+  "amount": "100g",
+  "notes": "备注信息"
+}
+```
+
+### 逗猫动作详情
+
+```json
+{
+  "duration": 30,
+  "notes": "玩了逗猫棒"
+}
+```
 
 ## 数据验证
 
@@ -480,6 +463,7 @@ const (
 - **枚举值验证**: 
   - 事件类型必须是预定义值之一
   - 动作类型必须是预定义值之一
+  - 站点动作类型必须是预定义值之一
 - **格式验证**: 
   - 电话号码：中国大陆 11 位手机号
   - 照片 URL：有效的 URL 格式
@@ -506,7 +490,8 @@ Controller 层  →  Middleware 层  →  Repository 层
 - 调用业务逻辑层
 
 #### 2. Middleware 层
-- **ActionProcessor**: 动作处理器，负责自动更新状态机
+- **ActionProcessor**: 猫咪动作处理器，负责自动更新猫咪状态机
+- **SiteActionProcessor**: 站点动作处理器，负责自动更新站点状态机
 - **Validators**: 自定义验证器，确保数据有效性
 - CORS 中间件：支持跨域请求
 
@@ -574,17 +559,21 @@ cat-dataserver/
 │   ├── cat_event_controller.go
 │   ├── cat_action_controller.go
 │   ├── cat_fsm_controller.go
-│   └── site_controller.go
+│   ├── site_controller.go
+│   ├── site_action_controller.go
+│   └── site_fsm_controller.go
 ├── database/            # 数据库初始化
 │   └── database.go      # 数据库连接和迁移
 ├── middleware/          # 中间件层
-│   ├── action_processor.go    # 动作处理器
+│   ├── action_processor.go    # 猫咪动作处理器
+│   ├── site_action_processor.go # 站点动作处理器
 │   └── validation.go         # 数据验证
 ├── model/               # 数据模型
 │   ├── cat.go           # 猫模型
 │   ├── cat_event.go     # 事件模型
 │   ├── cat_fsm.go       # 猫状态机
 │   ├── site.go          # 站点模型
+│   ├── site_action.go   # 站点动作模型
 │   ├── site_fsm.go      # 站点状态机
 │   └── pagination.go    # 分页模型
 ├── repository/          # 数据访问层
@@ -592,7 +581,9 @@ cat-dataserver/
 │   ├── cat_event_repository.go
 │   ├── cat_action_repository.go
 │   ├── cat_fsm_repository.go
-│   └── site_repository.go
+│   ├── site_repository.go
+│   ├── site_action_repository.go
+│   └── site_fsm_repository.go
 ├── router/              # 路由配置
 │   └── router.go        # 路由注册和中间件配置
 ├── main.go              # 程序入口
@@ -614,27 +605,27 @@ cat-dataserver/
 
 ### 1. 使用统一接口
 
-创建动作使用统一的 `POST /cat-actions` 接口，系统会自动处理状态机更新。
+创建动作使用统一的 `POST /cat-actions` 和 `POST /site-actions` 接口，系统会自动处理状态机更新。
 
 ### 2. 数据格式
 
-将关键数据（如体温、体重）直接放在 `action_detail` 中，便于自动解析。
+将关键数据（如体温、体重）使用 JSON 格式放在 `action_detail` 中，便于自动解析。
 
 ### 3. 错误处理
 
-即使状态机更新失败，动作记录也会保存，确保数据不丢失。
+状态机更新失败时会自动回滚动作记录，确保数据一致性。
 
 ### 4. 分页查询
 
 使用 `/page` 端点进行分页查询，避免一次返回大量数据。
 
-### 5. PATCH 更新
+### 5. 用户认证
 
-对于状态机的单个字段更新，使用 PATCH 接口更高效。
+创建站点动作时需要在请求头中提供 `X-User-ID`。
 
 ## 扩展开发
 
-### 添加新的动作类型
+### 添加新的猫咪动作类型
 
 1. 在 `model/cat_event.go` 中添加新的 `CatActionType` 常量
 2. 在 `middleware/validation.go` 的 `validateCatActionType` 中添加验证
@@ -642,13 +633,20 @@ cat-dataserver/
 4. 如需更新 FSM，添加对应的 repository 方法
 5. 编写测试验证功能
 
+### 添加新的站点动作类型
+
+1. 在 `model/site_action.go` 中添加新的 `SiteActionType` 常量
+2. 在 `middleware/validation.go` 的 `validateSiteActionType` 中添加验证
+3. 在 `middleware/site_action_processor.go` 的 `updateFSM` 中添加处理逻辑
+4. 如需更新 FSM，添加对应的 repository 方法
+5. 编写测试验证功能
+
 ### 添加新的状态字段
 
 1. 在 `model/cat_fsm.go` 或 `model/site_fsm.go` 中添加新字段
-2. 在 `repository/cat_fsm_repository.go` 中添加更新方法
-3. 在 `middleware/action_processor.go` 中添加处理逻辑
-4. 在 `router/router.go` 中添加新的 PATCH 路由
-5. 更新测试验证功能
+2. 在对应的 repository 中添加更新方法
+3. 在 `middleware/action_processor.go` 或 `middleware/site_action_processor.go` 中添加处理逻辑
+4. 更新测试验证功能
 
 ### 添加新的查询接口
 
@@ -660,8 +658,9 @@ cat-dataserver/
 ## CORS 配置
 
 服务默认允许来自以下源的跨域请求：
+- `http://localhost:5000`
 - `http://localhost:5173`
-- `http://127.0.0.1:5173`
+- `http://localhost:9000`
 
 如需修改，请编辑 `router/router.go` 中的 CORS 配置。
 
@@ -684,6 +683,13 @@ cat-dataserver/
 如有问题，请提交 Issue。
 
 ## 更新日志
+
+### v1.1.0
+- 新增站点动作（SiteAction）功能
+- 新增站点状态机自动更新
+- 猫咪和站点状态机改为只读，由动作驱动更新
+- 新增清理猫砂动作类型
+- CORS 配置更新
 
 ### v1.0.0
 - 初始版本发布
