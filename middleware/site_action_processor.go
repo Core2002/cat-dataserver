@@ -120,6 +120,6 @@ func (p *SiteActionProcessor) updateCleanLitterTime(action *model.SiteAction, fs
 		return nil, fmt.Errorf("更新清理猫砂时间失败: %v", err)
 	}
 
-	fsm.LastCleanLitter = &now
+	fsm.LastCleanLitterTime = &now
 	return fsm, nil
 }
