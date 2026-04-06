@@ -1,11 +1,18 @@
 # 构建阶段
 FROM docker.1ms.run/golang:1.25.0-alpine AS builder
 
+# 使用阿里云镜像源
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+
 # 安装必要的构建依赖
 RUN apk add --no-cache gcc musl-dev sqlite-dev git
 
 # 设置工作目录
 WORKDIR /app
+
+# 设置 Go 代理
+ENV GOPROXY=https://goproxy.cn,direct
+ENV GOSUMDB=sum.golang.google.cn
 
 # 复制 go mod 文件
 COPY go.mod go.sum ./
@@ -21,6 +28,9 @@ RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-w -s" -o cat-dataserver .
 
 # 运行阶段
 FROM alpine:latest
+
+# 使用阿里云镜像源
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 
 # 安装运行时依赖
 RUN apk add --no-cache ca-certificates tzdata
