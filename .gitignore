@@ -2,4 +2,4 @@ test.db
 .idea
 cat-dataserver.exe
 cat-dataserver.db
-
+data/
