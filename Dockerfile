@@ -58,6 +58,9 @@ USER appuser
 # 暴露端口
 EXPOSE 5100
 
+# 设置环境变量
+ENV GIN_MODE=release
+
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD wget -q --spider http://localhost:5100/health || exit 1
