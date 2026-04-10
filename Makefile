@@ -1,7 +1,7 @@
-TARGET = cat-database
-IMAGE_NAME = cat-database
-CONTAINER_NAME = cat-database
-VOLUME_NAME = cat-database
+TARGET = cat-dataserver
+IMAGE_NAME = cat-dataserver
+CONTAINER_NAME = cat-dataserver
+VOLUME_NAME = cat-dataserver
 
 build-image:
 	podman build -t $(IMAGE_NAME) --format docker .
