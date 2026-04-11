@@ -27,7 +27,7 @@ COPY . .
 RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-w -s" -o cat-dataserver .
 
 # 运行阶段
-FROM alpine:latest
+FROM docker.1ms.run/alpine:latest
 
 # 使用阿里云镜像源
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
