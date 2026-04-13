@@ -3,3 +3,5 @@ test.db
 cat-dataserver.exe
 cat-dataserver.db
 data/
+venv/
+mailmap.txt
