@@ -666,7 +666,10 @@ cat-dataserver/
 
 ## 许可证
 
-本项目仅供学习和研究使用。
+MIT License
+
+Copyright (c) 2026 Core2002
+
 
 ## 贡献
 
