@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-
 	"fifu.fun/cat-dataserver/config"
 	"fifu.fun/cat-dataserver/database"
 	"fifu.fun/cat-dataserver/router"
