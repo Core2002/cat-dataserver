@@ -1,5 +1,12 @@
+# ============================================
+# Global args
+# ============================================
+ARG GO_IMAGE=golang:1.25-alpine
+ARG ALPINE_IMAGE=alpine:latest
+
+
 # 构建阶段
-FROM docker.1ms.run/golang:1.25.0-alpine AS builder
+FROM ${GO_IMAGE} AS builder
 
 # 使用阿里云镜像源
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
@@ -27,7 +34,7 @@ COPY . .
 RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-w -s" -o cat-dataserver .
 
 # 运行阶段
-FROM docker.1ms.run/alpine:latest
+FROM ${ALPINE_IMAGE}
 
 # 使用阿里云镜像源
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
