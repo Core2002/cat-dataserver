@@ -9,7 +9,7 @@ ARG ALPINE_IMAGE=alpine:latest
 FROM ${GO_IMAGE} AS builder
 
 # 使用阿里云镜像源
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+RUN sed -i 's#https\?://dl-cdn.alpinelinux.org/alpine#https://mirrors.tuna.tsinghua.edu.cn/alpine#g' /etc/apk/repositories
 
 # 安装必要的构建依赖
 RUN apk add --no-cache gcc musl-dev sqlite-dev git
@@ -37,7 +37,7 @@ RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-w -s" -o cat-dataserver .
 FROM ${ALPINE_IMAGE}
 
 # 使用阿里云镜像源
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+RUN sed -i 's#https\?://dl-cdn.alpinelinux.org/alpine#https://mirrors.tuna.tsinghua.edu.cn/alpine#g' /etc/apk/repositories
 
 # 安装运行时依赖
 RUN apk add --no-cache ca-certificates tzdata
