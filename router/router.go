@@ -58,6 +58,7 @@ func SetupRouter() *gin.Engine {
 	siteActionController := controller.NewSiteActionController(siteActionRepo, siteRepo, siteActionProcessor)
 
 	siteController := controller.NewSiteController(siteRepo, siteFSMRepo)
+	hospitalizationController := controller.NewHospitalizationController(catRepo, siteRepo)
 
 	// Cat CRUD 路由
 	r.GET("/cats/page", catController.GetCatsPage)
@@ -106,6 +107,10 @@ func SetupRouter() *gin.Engine {
 	r.GET("/site-actions/site/:site_id", siteActionController.GetSiteActionsBySiteID)
 	r.GET("/site-actions/user/:user_id", siteActionController.GetSiteActionsByUserID)
 	r.POST("/site-actions", siteActionController.CreateSiteAction)
+
+	// 出入院管理路由（流程型，不落住院表）
+	r.POST("/hospitalizations/admit", hospitalizationController.AdmitCat)
+	r.POST("/hospitalizations/discharge", hospitalizationController.DischargeCat)
 
 	// 健康检查
 	r.GET("/health", controller.HealthCheck)
