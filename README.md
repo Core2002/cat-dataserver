@@ -202,11 +202,15 @@ const (
 
 **POST** `/cat-actions`
 
+请求头：
+```
+X-User-ID: 1
+```
+
 ```json
 {
   "cat_id": 1,
   "site_id": 1,
-  "user_id": 1,
   "action_type": "测体温",
   "action_detail": "{\"temperature_c\": 39.5}"
 }
@@ -234,13 +238,7 @@ const (
 }
 ```
 
-#### 更新动作
-
-**PUT** `/cat-actions/:id`
-
-#### 删除动作
-
-**DELETE** `/cat-actions/:id`
+> **注意**：CatAction 为只读 + 创建模式，不提供直接更新和删除接口。
 
 ### 猫咪状态机管理（只读，由动作驱动更新）
 
@@ -569,13 +567,14 @@ cat-dataserver/
 │   ├── site_action_processor.go # 站点动作处理器
 │   └── validation.go         # 数据验证
 ├── model/               # 数据模型
-│   ├── cat.go           # 猫模型
-│   ├── cat_event.go     # 事件模型
+│   ├── cat.go           # 猫模型（含 CatProfile）
+│   ├── cat_event.go     # 事件模型（含 CatAction）
 │   ├── cat_fsm.go       # 猫状态机
 │   ├── site.go          # 站点模型
 │   ├── site_action.go   # 站点动作模型
 │   ├── site_fsm.go      # 站点状态机
-│   └── pagination.go    # 分页模型
+│   ├── pagination.go    # 分页模型
+│   └── time_helper.go   # 时间格式辅助
 ├── repository/          # 数据访问层
 │   ├── cat_repository.go
 │   ├── cat_event_repository.go
@@ -621,7 +620,7 @@ cat-dataserver/
 
 ### 5. 用户认证
 
-创建站点动作时需要在请求头中提供 `X-User-ID`。
+创建猫咪动作和站点动作时都需要在请求头中提供 `X-User-ID`。
 
 ## 扩展开发
 
@@ -659,8 +658,8 @@ cat-dataserver/
 
 服务默认允许来自以下源的跨域请求：
 - `http://localhost:5000`
-- `http://localhost:5173`
-- `http://localhost:9000`
+- `http://localhost:5200`
+- `https://tls.internal`
 
 如需修改，请编辑 `router/router.go` 中的 CORS 配置。
 
