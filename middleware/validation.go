@@ -141,6 +141,8 @@ func validateCatEventType(fl validator.FieldLevel) bool {
 		string(model.CatBirth),
 		string(model.CatDeath),
 		string(model.CatContractTerminatio),
+		string(model.CatAdmitted),
+		string(model.CatDischarged),
 	}
 
 	for _, t := range validTypes {
@@ -162,6 +164,8 @@ func validateCatActionType(fl validator.FieldLevel) bool {
 		string(model.CatActionTrimNails),
 		string(model.CatActionBathing),
 		string(model.CatActionVaccinate),
+		string(model.CatActionAdmit),
+		string(model.CatActionDischarge),
 	}
 
 	for _, t := range validTypes {

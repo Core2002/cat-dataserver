@@ -1,11 +1,11 @@
 package controller
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
-	"time"
 
-	"fifu.fun/cat-dataserver/database"
+	"fifu.fun/cat-dataserver/middleware"
 	"fifu.fun/cat-dataserver/model"
 	"fifu.fun/cat-dataserver/repository"
 	"github.com/gin-gonic/gin"
@@ -35,18 +35,27 @@ type DischargeCatRequest struct {
 
 // HospitalizationController 出入院管理控制器
 type HospitalizationController struct {
-	catRepo    *repository.CatRepository
-	siteRepo   *repository.SiteRepository
+	catRepo          *repository.CatRepository
+	siteRepo         *repository.SiteRepository
+	catFSMRepo       *repository.CatFSMRepository
+	catEventRepo     *repository.CatEventRepository
+	actionProcessor  *middleware.ActionProcessor
 }
 
 // NewHospitalizationController 创建出入院管理控制器
 func NewHospitalizationController(
 	catRepo *repository.CatRepository,
 	siteRepo *repository.SiteRepository,
+	catFSMRepo *repository.CatFSMRepository,
+	catEventRepo *repository.CatEventRepository,
+	actionProcessor *middleware.ActionProcessor,
 ) *HospitalizationController {
 	return &HospitalizationController{
-		catRepo:    catRepo,
-		siteRepo:   siteRepo,
+		catRepo:         catRepo,
+		siteRepo:        siteRepo,
+		catFSMRepo:      catFSMRepo,
+		catEventRepo:    catEventRepo,
+		actionProcessor: actionProcessor,
 	}
 }
 
@@ -68,47 +77,48 @@ func (ctrl *HospitalizationController) AdmitCat(c *gin.Context) {
 		return
 	}
 
-	err := database.DB.Transaction(func(tx *gorm.DB) error {
-		now := time.Now()
-		// 完整初始化：确保 CatFSM 存在，并写入入院初始状态。
-		// 注意：这里不保存“入院表单记录”，仅执行业务状态变更。
-		var fsm model.CatFSM
-		err := tx.Where("cat_id = ?", req.CatID).First(&fsm).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			fsm = model.CatFSM{
-				CatID:         req.CatID,
-				SiteID:        req.SiteID,
-				TemperatureC:  req.InitialTemperatureC,
-				WeightKG:      req.InitialWeightKG,
-				TrimNailsTime: now,
-			}
-			return tx.Create(&fsm).Error
-		}
-		if err != nil {
-			return err
-		}
-		if fsm.SiteID > 0 {
-			return errors.New("cat is already admitted in a site")
-		}
+	fsm, err := ctrl.catFSMRepo.FindByID(req.CatID)
+	if err == nil && fsm.SiteID > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "cat is already admitted in a site"})
+		return
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-		fsm.SiteID = req.SiteID
-		fsm.TemperatureC = req.InitialTemperatureC
-		fsm.WeightKG = req.InitialWeightKG
-		return tx.Save(&fsm).Error
+	detail, _ := json.Marshal(model.AdmissionActionDetail{
+		Reason:       req.AdmissionReason,
+		Notes:        req.AdmissionNote,
+		TemperatureC: &req.InitialTemperatureC,
+		WeightKG:     &req.InitialWeightKG,
 	})
+
+	action := model.CatAction{
+		CatID:        req.CatID,
+		SiteID:       req.SiteID,
+		UserID:       req.UserID,
+		ActionType:   model.CatActionAdmit,
+		ActionDetail: string(detail),
+	}
+	_, err = ctrl.actionProcessor.ProcessAction(&action)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"message":            "admitted",
-		"cat_id":             req.CatID,
-		"site_id":            req.SiteID,
-		"initial_reason":     req.AdmissionReason,
-		"initial_note":       req.AdmissionNote,
-		"initial_operatorId": req.UserID,
-	})
+	event := model.CatEvent{
+		EventType: model.CatAdmitted,
+		SiteID:    req.SiteID,
+		UserID:    req.UserID,
+		CatID:     req.CatID,
+		Detail:    req.AdmissionReason + "；" + req.AdmissionNote,
+	}
+	if err := ctrl.catEventRepo.Create(&event); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "入院动作成功，但写入事件失败: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"action": action, "event": event})
 }
 
 // DischargeCat 办理出院
@@ -124,35 +134,48 @@ func (ctrl *HospitalizationController) DischargeCat(c *gin.Context) {
 		return
 	}
 
-	err := database.DB.Transaction(func(tx *gorm.DB) error {
-		// 出院结算：更新 FSM 并解绑设施（site_id=0）。
-		// 注意：这里不保存“出院表单记录”，仅执行业务状态变更。
-		var fsm model.CatFSM
-		if err := tx.Where("cat_id = ?", req.CatID).First(&fsm).Error; err != nil {
-			return err
-		}
-		if fsm.SiteID == 0 {
-			return errors.New("cat is not admitted")
-		}
-		fsm.SiteID = 0
-		if req.FinalTemperatureC != nil {
-			fsm.TemperatureC = *req.FinalTemperatureC
-		}
-		if req.FinalWeightKG != nil {
-			fsm.WeightKG = *req.FinalWeightKG
-		}
-		return tx.Save(&fsm).Error
+	fsm, err := ctrl.catFSMRepo.FindByID(req.CatID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "cat fsm not found"})
+		return
+	}
+	if fsm.SiteID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "cat is not admitted"})
+		return
+	}
+	currentSiteID := fsm.SiteID
+
+	detail, _ := json.Marshal(model.DischargeActionDetail{
+		Reason:       req.DischargeReason,
+		Notes:        req.DischargeNote,
+		TemperatureC: req.FinalTemperatureC,
+		WeightKG:     req.FinalWeightKG,
 	})
+
+	action := model.CatAction{
+		CatID:        req.CatID,
+		SiteID:       currentSiteID,
+		UserID:       req.UserID,
+		ActionType:   model.CatActionDischarge,
+		ActionDetail: string(detail),
+	}
+	_, err = ctrl.actionProcessor.ProcessAction(&action)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message":              "discharged",
-		"cat_id":               req.CatID,
-		"discharge_reason":     req.DischargeReason,
-		"discharge_note":       req.DischargeNote,
-		"discharge_operatorId": req.UserID,
-	})
+	event := model.CatEvent{
+		EventType: model.CatDischarged,
+		SiteID:    currentSiteID,
+		UserID:    req.UserID,
+		CatID:     req.CatID,
+		Detail:    req.DischargeReason + "；" + req.DischargeNote,
+	}
+	if err := ctrl.catEventRepo.Create(&event); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "出院动作成功，但写入事件失败: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"action": action, "event": event})
 }

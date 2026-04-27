@@ -58,7 +58,13 @@ func SetupRouter() *gin.Engine {
 	siteActionController := controller.NewSiteActionController(siteActionRepo, siteRepo, siteActionProcessor)
 
 	siteController := controller.NewSiteController(siteRepo, siteFSMRepo)
-	hospitalizationController := controller.NewHospitalizationController(catRepo, siteRepo)
+	hospitalizationController := controller.NewHospitalizationController(
+		catRepo,
+		siteRepo,
+		catFSMRepo,
+		catEventRepo,
+		actionProcessor,
+	)
 
 	// Cat CRUD 路由
 	r.GET("/cats/page", catController.GetCatsPage)

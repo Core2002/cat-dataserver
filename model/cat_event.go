@@ -17,6 +17,8 @@ const (
 	CatBirth              = "分娩"
 	CatDeath              = "死亡"
 	CatContractTerminatio = "合同解除"
+	CatAdmitted           = "入院"
+	CatDischarged         = "出院"
 )
 
 type CatEvent struct {
@@ -41,6 +43,8 @@ const (
 	CatActionTrimNails       = "修剪指甲"
 	CatActionBathing         = "洗澡"
 	CatActionVaccinate       = "疫苗"
+	CatActionAdmit           = "入院"
+	CatActionDischarge       = "出院"
 )
 
 type CatAction struct {
@@ -90,6 +94,22 @@ type BathingActionDetail struct {
 type VaccinateActionDetail struct {
 	VaccineName string `json:"vaccine_name" binding:"required"` // 疫苗名称
 	BatchNo     string `json:"batch_no" binding:"required"`     // 批号
+}
+
+// AdmissionActionDetail 入院动作详情
+type AdmissionActionDetail struct {
+	Reason       string   `json:"reason"`
+	Notes        string   `json:"notes"`
+	TemperatureC *float32 `json:"temperature_c"`
+	WeightKG     *float32 `json:"weight_kg"`
+}
+
+// DischargeActionDetail 出院动作详情
+type DischargeActionDetail struct {
+	Reason       string   `json:"reason"`
+	Notes        string   `json:"notes"`
+	TemperatureC *float32 `json:"temperature_c"`
+	WeightKG     *float32 `json:"weight_kg"`
 }
 
 // ParseTemperatureActionDetail 解析测体温动作的详细信息
@@ -151,6 +171,24 @@ func ParseVaccinateActionDetail(detail string) (*VaccinateActionDetail, error) {
 	var actionDetail VaccinateActionDetail
 	if err := json.Unmarshal([]byte(detail), &actionDetail); err != nil {
 		return nil, fmt.Errorf("解析疫苗信息失败: %v", err)
+	}
+	return &actionDetail, nil
+}
+
+// ParseAdmissionActionDetail 解析入院动作详情
+func ParseAdmissionActionDetail(detail string) (*AdmissionActionDetail, error) {
+	var actionDetail AdmissionActionDetail
+	if err := json.Unmarshal([]byte(detail), &actionDetail); err != nil {
+		return nil, fmt.Errorf("解析入院信息失败: %v", err)
+	}
+	return &actionDetail, nil
+}
+
+// ParseDischargeActionDetail 解析出院动作详情
+func ParseDischargeActionDetail(detail string) (*DischargeActionDetail, error) {
+	var actionDetail DischargeActionDetail
+	if err := json.Unmarshal([]byte(detail), &actionDetail); err != nil {
+		return nil, fmt.Errorf("解析出院信息失败: %v", err)
 	}
 	return &actionDetail, nil
 }

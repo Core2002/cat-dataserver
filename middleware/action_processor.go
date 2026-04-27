@@ -74,6 +74,10 @@ func (p *ActionProcessor) updateFSM(action *model.CatAction) (*model.CatFSM, err
 		return p.updateTrimNailsTime(action, fsm)
 	case model.CatActionWeigh:
 		return p.updateWeight(action, fsm)
+	case model.CatActionAdmit:
+		return p.updateAdmission(action, fsm)
+	case model.CatActionDischarge:
+		return p.updateDischarge(action, fsm)
 	case model.CatActionSterilize, model.CatActionDeworm, model.CatActionVaccinate:
 		return fsm, nil // 医疗类动作暂不更新FSM
 	default:
@@ -119,5 +123,43 @@ func (p *ActionProcessor) updateTrimNailsTime(action *model.CatAction, fsm *mode
 	}
 
 	fsm.TrimNailsTime = now
+	return fsm, nil
+}
+
+// updateAdmission 入院动作驱动状态机：绑定设施并可同步体温/体重
+func (p *ActionProcessor) updateAdmission(action *model.CatAction, fsm *model.CatFSM) (*model.CatFSM, error) {
+	detail, err := model.ParseAdmissionActionDetail(action.ActionDetail)
+	if err != nil {
+		return nil, err
+	}
+	fsm.SiteID = action.SiteID
+	if detail.TemperatureC != nil {
+		fsm.TemperatureC = *detail.TemperatureC
+	}
+	if detail.WeightKG != nil {
+		fsm.WeightKG = *detail.WeightKG
+	}
+	if err := p.fsmRepo.Update(fsm); err != nil {
+		return nil, err
+	}
+	return fsm, nil
+}
+
+// updateDischarge 出院动作驱动状态机：解绑设施并可同步体温/体重
+func (p *ActionProcessor) updateDischarge(action *model.CatAction, fsm *model.CatFSM) (*model.CatFSM, error) {
+	detail, err := model.ParseDischargeActionDetail(action.ActionDetail)
+	if err != nil {
+		return nil, err
+	}
+	fsm.SiteID = 0
+	if detail.TemperatureC != nil {
+		fsm.TemperatureC = *detail.TemperatureC
+	}
+	if detail.WeightKG != nil {
+		fsm.WeightKG = *detail.WeightKG
+	}
+	if err := p.fsmRepo.Update(fsm); err != nil {
+		return nil, err
+	}
 	return fsm, nil
 }
